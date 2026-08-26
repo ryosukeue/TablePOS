@@ -1,0 +1,18 @@
+# Xcode user state and build output
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Local task artifacts and packaged deliverables
+work/
+outputs/
+
+# macOS
+.DS_Store
