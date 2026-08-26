@@ -11,7 +11,7 @@
 - [x] Grand/limited menu type and frequent category tiles
 - [x] Repeated tile tap quantity increment and direct quantity input
 - [x] Custom blank-name item with tax metadata
-- [x] Text/reading normalization and optional `NLEmbedding` ranking
+- [x] Unicode/kana normalization, Sudachi normalized/readings/tokens, Japanese edit similarity, and optional `NLEmbedding` ranking
 - [x] Vision OCR from camera/photo library with editable confirmation
 - [x] 8%/10%, included/excluded tax, aggregate excluded-tax calculation
 - [x] Configurable tax fraction rounding
@@ -27,6 +27,7 @@
 - [ ] OCR row/column layout reconstruction beyond line-based name/price parsing
 - [ ] Production accessibility/localization review
 - [ ] Store migration and corrupt-store recovery UX
+- [ ] Evaluate SudachiDict small/custom dictionary if the 207 MB core dictionary is too large for distribution
 
 ## Outside MVP
 

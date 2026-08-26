@@ -7,8 +7,9 @@ Provide a fast, low-maintenance iPad register for one restaurant operating one d
 ## 2. Platform and technical constraints
 
 - The operational target is iPad. The same target also supports iPhone for testing with a compact adaptive layout. Minimum deployment target is iOS/iPadOS 17.
-- SwiftUI for UI, SwiftData for persistence, Vision for OCR, and Natural Language for semantic search.
+- SwiftUI for UI, SwiftData for persistence, Vision for OCR, Sudachi.rs/SudachiDict core for Japanese analysis, and Natural Language for final-stage semantic search.
 - All MVP business data and processing remain on the device.
+- A clean build may download the pinned dictionary artifact and verify its checksum. The built/installed application must not require a network connection for search.
 - One store and one active device. No user accounts or staff permissions in the MVP.
 - Monetary values are stored as integer Japanese yen.
 
@@ -37,9 +38,12 @@ Provide a fast, low-maintenance iPad register for one restaurant operating one d
 ## 5. Search
 
 - No manually maintained synonym dictionary.
-- Search ranking uses, in order: exact/normalized match, partial normalized match, reading/romanized match, then `NLEmbedding` semantic similarity.
-- Normalization absorbs case, width, whitespace, punctuation, hiragana/katakana, and readable kanji-to-Latin differences where system transforms support them.
-- If a Japanese sentence embedding is unavailable, search falls back to deterministic string and reading normalization.
+- Search ranking uses, in order: exact surface match, prefix/partial match, Sudachi normalized-form match, Sudachi reading match, morpheme-token match, kana/kanji edit similarity, then `NLEmbedding` semantic similarity.
+- Basic normalization applies Unicode compatibility normalization, case/width/diacritic folding, hiragana-to-katakana conversion, and whitespace/punctuation removal.
+- Sudachi mode C creates the full normalized form and reading. Modes A/B/C contribute searchable token variants.
+- Kanji reading is obtained from the Japanese dictionary; generic kanji-to-Latin transliteration is not used.
+- Product search indexes are regenerated when a product is saved and lazily backfilled for existing records.
+- If Sudachi resources or a Japanese sentence embedding are unavailable, search falls back to deterministic Unicode/kana normalization and character edit similarity.
 
 ## 6. OCR product import
 
@@ -87,7 +91,7 @@ Provide a fast, low-maintenance iPad register for one restaurant operating one d
 
 ## 11. MVP acceptance criteria
 
-1. A clean clone opens as an Xcode project and builds for iPad and iPhone simulators.
+1. A clean clone opens as an Xcode project and, with network access for the pinned dictionary build artifact, builds for iPad and iPhone simulators.
 2. First-run setup creates the configured number of table tiles.
 3. A user can add products, custom items, adjust quantities, move an order, and complete a payment.
 4. Totals distinguish tax rates and included/excluded tax and apply the configured rounding rule.

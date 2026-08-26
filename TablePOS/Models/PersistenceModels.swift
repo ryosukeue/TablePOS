@@ -67,6 +67,9 @@ final class Product {
     var categoryID: UUID?
     var isFrequent: Bool
     var isEnabled: Bool
+    var searchNormalizedKey: String?
+    var searchReadingKey: String?
+    var searchTokenKeysRaw: String?
     var createdAt: Date
     var updatedAt: Date
 
@@ -92,6 +95,9 @@ final class Product {
         self.categoryID = categoryID
         self.isFrequent = isFrequent
         self.isEnabled = isEnabled
+        self.searchNormalizedKey = nil
+        self.searchReadingKey = nil
+        self.searchTokenKeysRaw = nil
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }

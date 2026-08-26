@@ -144,7 +144,7 @@ struct OCRImportView: View {
 
     private func saveCandidates() {
         validCandidates.forEach { candidate in
-            modelContext.insert(Product(
+            let product = Product(
                 name: candidate.name.trimmingCharacters(in: .whitespacesAndNewlines),
                 price: candidate.price,
                 taxRate: taxRate,
@@ -152,7 +152,9 @@ struct OCRImportView: View {
                 menuType: menuType,
                 categoryID: categoryID,
                 isFrequent: isFrequent
-            ))
+            )
+            ProductSearch.updateIndex(for: product)
+            modelContext.insert(product)
         }
         do {
             try modelContext.save()

@@ -76,12 +76,16 @@ enum AppDataService {
         let categories = try context.fetch(FetchDescriptor<ProductCategory>())
         func category(_ name: String) -> UUID? { categories.first { $0.name == name }?.id }
 
-        [
+        let products = [
             Product(name: "生ビール", price: 600, taxRate: .standard, taxType: .included, menuType: .grand, categoryID: category("ドリンク"), isFrequent: true),
             Product(name: "ウーロン茶", price: 350, taxRate: .standard, taxType: .included, menuType: .grand, categoryID: category("ドリンク"), isFrequent: true),
             Product(name: "枝豆", price: 400, taxRate: .standard, taxType: .included, menuType: .grand, categoryID: category("フード"), isFrequent: true),
             Product(name: "唐揚げ", price: 680, taxRate: .standard, taxType: .included, menuType: .grand, categoryID: category("フード"), isFrequent: true)
-        ].forEach(context.insert)
+        ]
+        products.forEach {
+            ProductSearch.updateIndex(for: $0)
+            context.insert($0)
+        }
         try context.save()
     }
 }

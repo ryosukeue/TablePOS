@@ -1,0 +1,4 @@
+module TablePOSSudachi {
+    header "TablePOSSudachi.h"
+    export *
+}

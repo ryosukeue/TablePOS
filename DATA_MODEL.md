@@ -16,7 +16,13 @@ Singleton-like record identified by a stable UUID. Holds whether setup is comple
 
 ### Product
 
-`id`, name, price, tax rate, tax type, menu type, category ID, frequent flag, enabled flag, timestamps. Product search indexes are derived at runtime so normalization can improve without a database migration.
+`id`, name, price, tax rate, tax type, menu type, category ID, frequent flag, enabled flag, timestamps, and optional search index fields:
+
+- `searchNormalizedKey`: Sudachi normalized form after basic normalization
+- `searchReadingKey`: Sudachi katakana reading after basic normalization
+- `searchTokenKeysRaw`: normalized A/B/C token variants joined with an internal separator
+
+The fields are optional for lightweight migration from the first MVP store. Missing values are derived on demand and backfilled when the product screen opens. Product save and OCR import regenerate them.
 
 ### Order / OrderItem
 

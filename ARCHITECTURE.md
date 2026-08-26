@@ -8,6 +8,7 @@ TablePOS is a local-first, iPad-first SwiftUI application with an adaptive iPhon
 SwiftUI views
   -> order and checkout actions
   -> TaxCalculator / ProductSearch / OCRService
+  -> SudachiAnalyzer -> bundled Sudachi.rs static library + SudachiDict core
   -> SwiftData ModelContext
   -> on-device persistent store
 ```
@@ -37,9 +38,13 @@ Business links use stable UUID fields (`tableID`, `orderID`, `saleID`) rather th
 
 A checkout creates one `Sale`, its `SaleItem` snapshots, and then deletes the active order lines/order in one `ModelContext` save. Correction creates a copied replacement sale and marks the source cancelled in the same save.
 
-### Search fallback
+### Japanese search pipeline
 
-`ProductSearch` first runs deterministic normalization and reading conversion. It asks `NLEmbedding` for semantic distance only when a Japanese sentence embedding is available. The UI remains fully usable without embedding assets.
+`ProductSearch` does not use Foundation's generic `toLatin` transform. It first creates a deterministic Unicode/kana key, then asks the bundled Sudachi.rs analyzer for Japanese normalized forms, katakana readings, and A/B/C-mode token variants. The results are cached on each `Product` so normal ranking does not tokenize the complete catalog for each keystroke.
+
+Lexical matches are ranked before a kana/kanji-aware character edit score. `NLEmbedding` is the last, lower-confidence semantic tier. If Sudachi cannot be initialized or the embedding is unavailable, deterministic Unicode/kana and edit-distance search remains available.
+
+The Rust tokenizer is exposed through a small C ABI in `SudachiBridge` and linked as `TablePOSSudachi.xcframework` with device and simulator slices. A build phase fetches the pinned SudachiDict core wheel, verifies its checksum, and copies the dictionary into `SudachiResources.bundle`. There is no runtime network access. See `SEARCH.md` for exact versions and tradeoffs.
 
 ### OCR privacy
 

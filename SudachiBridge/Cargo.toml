@@ -1,0 +1,22 @@
+[package]
+name = "tablepos-sudachi-bridge"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+[lib]
+name = "tablepos_sudachi"
+crate-type = ["staticlib"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sudachi = { git = "https://github.com/WorksApplications/sudachi.rs.git", rev = "f4dd8f20a774bd71d34a7d4ffa00d987b8946f9e" }
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+opt-level = "s"
+panic = "abort"
+strip = "symbols"

@@ -9,10 +9,12 @@ xcuserdata/
 # Swift Package Manager
 .build/
 .swiftpm/
+SudachiBridge/target/
 
 # Local task artifacts and packaged deliverables
 work/
 outputs/
+TablePOS/Resources/SudachiResources.bundle/system.dic
 
 # macOS
 .DS_Store

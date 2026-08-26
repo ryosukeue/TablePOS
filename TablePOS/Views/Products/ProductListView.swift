@@ -69,6 +69,7 @@ struct ProductListView: View {
         .sheet(isPresented: $showNewProduct) { ProductFormView(product: nil) }
         .sheet(item: $editingProduct) { ProductFormView(product: $0) }
         .sheet(isPresented: $showOCR) { OCRImportView() }
+        .task { await backfillMissingSearchIndexes() }
     }
 
     private func categoryName(for product: Product) -> String {
@@ -77,6 +78,25 @@ struct ProductListView: View {
 
     private func categoryColor(for product: Product) -> Color {
         Color(hex: categories.first { $0.id == product.categoryID }?.colorHex ?? "64748B")
+    }
+
+    @MainActor
+    private func backfillMissingSearchIndexes() async {
+        let missing = products
+            .filter { $0.searchNormalizedKey == nil || $0.searchReadingKey == nil }
+            .map { ($0.id, $0.name) }
+        guard !missing.isEmpty else { return }
+
+        let indexes = await Task.detached(priority: .utility) {
+            missing.map { ($0.0, ProductSearch.makeIndex(for: $0.1)) }
+        }.value
+        for (id, index) in indexes {
+            guard let product = products.first(where: { $0.id == id }) else { continue }
+            product.searchNormalizedKey = index.normalized
+            product.searchReadingKey = index.reading
+            product.searchTokenKeysRaw = index.tokens.joined(separator: "\u{1F}")
+        }
+        try? modelContext.save()
     }
 }
 
@@ -151,6 +171,7 @@ struct ProductFormView: View {
     }
 
     private func save() {
+        let savedProduct: Product
         if let product {
             product.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
             product.price = price
@@ -161,8 +182,9 @@ struct ProductFormView: View {
             product.isFrequent = isFrequent
             product.isEnabled = isEnabled
             product.updatedAt = .now
+            savedProduct = product
         } else {
-            modelContext.insert(Product(
+            let product = Product(
                 name: name.trimmingCharacters(in: .whitespacesAndNewlines),
                 price: price,
                 taxRate: taxRate,
@@ -171,8 +193,11 @@ struct ProductFormView: View {
                 categoryID: categoryID,
                 isFrequent: isFrequent,
                 isEnabled: isEnabled
-            ))
+            )
+            modelContext.insert(product)
+            savedProduct = product
         }
+        ProductSearch.updateIndex(for: savedProduct)
         do {
             try modelContext.save()
             dismiss()
