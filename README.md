@@ -14,6 +14,7 @@ The first launch asks for the number of tables. Sample categories and products c
 
 ## Documents
 
+- [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md): 日本語で読む全体構成、処理フロー、ファイル案内
 - [requirements.md](requirements.md): agreed product requirements and acceptance criteria
 - [ARCHITECTURE.md](ARCHITECTURE.md): application structure and design decisions
 - [DATA_MODEL.md](DATA_MODEL.md): persisted entities and calculation rules
