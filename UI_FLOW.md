@@ -39,6 +39,11 @@ Table tile
 Products tab
   -> add/edit product
   -> swipe delete
+  -> CSV import
+     -> choose CSV/text file
+     -> validation preview and line errors
+     -> choose update/skip for existing names
+     -> import valid products and create missing categories
   -> OCR import
      -> camera or photo library
      -> recognition

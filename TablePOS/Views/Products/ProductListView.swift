@@ -10,6 +10,7 @@ struct ProductListView: View {
     @State private var editingProduct: Product?
     @State private var showNewProduct = false
     @State private var showOCR = false
+    @State private var showCSV = false
 
     private var filteredProducts: [Product] {
         searchText.isEmpty ? products : ProductSearch.ranked(products, query: searchText)
@@ -55,20 +56,24 @@ struct ProductListView: View {
         }
         .overlay {
             if products.isEmpty {
-                EmptyStateView(title: "商品がありません", message: "＋またはOCRから商品を登録してください。", systemImage: "fork.knife")
+                EmptyStateView(title: "商品がありません", message: "＋、CSV、またはOCRから商品を登録してください。", systemImage: "fork.knife")
             }
         }
         .searchable(text: $searchText, prompt: "商品名・読み・意味で検索")
         .navigationTitle("商品マスタ")
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button("OCR", systemImage: "text.viewfinder") { showOCR = true }
+                Menu("読み込み", systemImage: "square.and.arrow.down") {
+                    Button("CSVから読み込む", systemImage: "tablecells") { showCSV = true }
+                    Button("OCRで読み込む", systemImage: "text.viewfinder") { showOCR = true }
+                }
                 Button("追加", systemImage: "plus") { showNewProduct = true }
             }
         }
         .sheet(isPresented: $showNewProduct) { ProductFormView(product: nil) }
         .sheet(item: $editingProduct) { ProductFormView(product: $0) }
         .sheet(isPresented: $showOCR) { OCRImportView() }
+        .sheet(isPresented: $showCSV) { CSVImportView() }
         .task { await backfillMissingSearchIndexes() }
     }
 

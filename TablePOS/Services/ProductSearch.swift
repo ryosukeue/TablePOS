@@ -70,6 +70,10 @@ enum ProductSearch {
 
     static func updateIndex(for product: Product) {
         let index = makeIndex(for: product.name)
+        updateIndex(for: product, using: index)
+    }
+
+    static func updateIndex(for product: Product, using index: SearchIndex) {
         product.searchNormalizedKey = index.normalized
         product.searchReadingKey = index.reading
         product.searchTokenKeysRaw = index.tokens.joined(separator: tokenSeparator)

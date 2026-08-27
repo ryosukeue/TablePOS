@@ -15,6 +15,8 @@ The first launch asks for the number of tables. Sample categories and products c
 ## Documents
 
 - [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md): 日本語で読む全体構成、処理フロー、ファイル案内
+- [CSV_IMPORT_GUIDE.md](CSV_IMPORT_GUIDE.md): メニューCSVの列定義、作成方法、取込ルール
+- [CSV_IMPORT_REQUIREMENTS.md](CSV_IMPORT_REQUIREMENTS.md): メニューCSV取込の機能要件と受入条件
 - [requirements.md](requirements.md): agreed product requirements and acceptance criteria
 - [ARCHITECTURE.md](ARCHITECTURE.md): application structure and design decisions
 - [DATA_MODEL.md](DATA_MODEL.md): persisted entities and calculation rules
@@ -24,6 +26,6 @@ The first launch asks for the number of tables. Sample categories and products c
 
 ## Current scope
 
-The MVP supports table-based orders, moving/merging tables, product management, category-based quick tiles, normalized and semantic search, custom items, tax calculation, payment recording, cash change, optional ten-yen rounding, sale history, cancellation, and correction sales. OCR imports menu candidates from the camera or photo library and leaves tax fields for confirmation.
+The MVP supports table-based orders, moving/merging tables, product management, CSV menu import, category-based quick tiles, normalized and semantic search, custom items, tax calculation, payment recording, cash change, optional ten-yen rounding, sale history, cancellation, and correction sales. OCR imports menu candidates from the camera or photo library and leaves tax fields for confirmation.
 
 No network account, cloud synchronization, printer, cash drawer, backup, sold-out management, or split payment is included.

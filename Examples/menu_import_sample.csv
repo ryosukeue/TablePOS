@@ -1,0 +1,5 @@
+name,price,tax_rate,tax_type,menu_type,category,is_frequent,is_enabled
+生ビール,600,10,included,grand,ドリンク,true,true
+塩むすび,300,8,included,grand,フード,true,true
+"刺身盛り合わせ, 小","1,200",10,included,limited,フード,false,true
+テイクアウト弁当,800,8,excluded,limited,フード,false,true

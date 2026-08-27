@@ -17,7 +17,7 @@ SwiftUI views
 
 - `App`: application entry point, model container, root setup gate, and tab navigation.
 - `Models`: SwiftData records and stable string-backed enums.
-- `Services`: tax calculation, search normalization/ranking, OCR parsing, seeding, and order mutations.
+- `Services`: tax calculation, search normalization/ranking, CSV import, OCR parsing, seeding, and order mutations.
 - `Views`: table grid/order entry, product master, history/correction, OCR confirmation, and settings.
 
 ## Important decisions
@@ -49,6 +49,10 @@ The Rust tokenizer is exposed through a small C ABI in `SudachiBridge` and linke
 ### OCR privacy
 
 Vision text recognition receives an in-memory image and runs locally. Images are not retained in the application model after recognition.
+
+### CSV import boundary
+
+`MenuCSVImportService` handles file access, UTF-8/Shift_JIS decoding, RFC-style quoted fields, header aliases, defaults, and row validation without mutating SwiftData. After preview, `MenuCSVProductService` applies valid rows, resolves or creates categories, handles the selected duplicate policy, and saves once. A persistence failure rolls the model context back.
 
 ## Error handling
 

@@ -50,6 +50,8 @@ TablePOS/
 │   ├── ProductSearch.swift      # 商品検索インデックスと順位付け
 │   ├── SudachiAnalyzer.swift    # SwiftとSudachi.rsの橋渡し
 │   ├── OCRService.swift         # Vision OCRと商品・価格候補抽出
+│   ├── MenuCSVImportService.swift # CSV解析、文字コード判定、行検証
+│   ├── MenuCSVProductService.swift # CSV商品・カテゴリの一括保存
 │   └── Formatting.swift         # 円表示、色などの共通処理
 │
 ├── Views/
@@ -58,7 +60,8 @@ TablePOS/
 │   │   ├── OrderView.swift      # 商品選択と注文内容
 │   │   └── OrderSheets.swift    # カスタム商品、卓移動、会計
 │   ├── Products/
-│   │   └── ProductListView.swift # 商品一覧、追加・編集
+│   │   ├── ProductListView.swift # 商品一覧、追加・編集
+│   │   └── CSVImportView.swift  # CSV選択、検証結果、取込実行
 │   ├── OCR/
 │   │   └── OCRImportView.swift  # 撮影・写真選択・OCR確認
 │   ├── History/
@@ -176,7 +179,24 @@ SwiftDataのオブジェクトリレーションではなくUUIDを保存し、S
 
 完全一致や読み一致を意味検索より優先します。手動同義語辞書はありません。Sudachiが利用できない場合も、基本的な文字・かな正規化へフォールバックします。詳しくは[SEARCH.md](SEARCH.md)を参照してください。
 
-## 9. OCR登録
+## 9. CSVメニュー取込
+
+UTF-8またはShift_JISのCSVを選択し、商品名・価格などをまとめて商品マスタへ保存できます。CSV解析と行検証を先に実行し、利用者がプレビューとエラー行を確認してからSwiftDataを更新します。
+
+```text
+CSV選択
+  → 文字コード判定
+  → ヘッダー解決と行検証
+  → 正常行・エラー行をプレビュー
+  → 既存同名商品を更新またはスキップ
+  → 未登録カテゴリを作成
+  → 商品検索インデックスを生成
+  → 一括保存
+```
+
+CSVにない既存商品は変更しません。正式な列構造と作成方法は[CSV_IMPORT_GUIDE.md](CSV_IMPORT_GUIDE.md)を参照してください。
+
+## 10. OCR登録
 
 カメラまたは写真ライブラリの画像をVisionへ渡し、同じ行にある商品名と価格を候補として抽出します。画像自体はSwiftDataへ保存しません。
 
@@ -189,7 +209,7 @@ OCRは税率や内税・外税を自動判断しません。保存前の確認�
 - カテゴリ
 - 頻出タイルへの表示
 
-## 10. ビルド時のSudachi辞書
+## 11. ビルド時のSudachi辞書
 
 `system.dic`は約207MBあるためGitへ保存していません。クリーンビルド時にXcodeのBuild Phaseから`Scripts/fetch_sudachi_dictionary.sh`を実行します。
 
@@ -203,7 +223,7 @@ OCRは税率や内税・外税を自動判断しません。保存前の確認�
 
 初回のクリーンビルドだけネット接続が必要です。インストール後のアプリはオフラインで検索できます。
 
-## 11. 変更したい機能ごとの入口
+## 12. 変更したい機能ごとの入口
 
 | やりたいこと | 最初に見るファイル |
 | --- | --- |
@@ -215,16 +235,19 @@ OCRは税率や内税・外税を自動判断しません。保存前の確認�
 | 商品検索を変える | `Services/ProductSearch.swift` |
 | Sudachi連携を変える | `Services/SudachiAnalyzer.swift`と`SudachiBridge/` |
 | OCR抽出を変える | `Services/OCRService.swift` |
+| CSV取込を変える | `Services/MenuCSVImportService.swift`と`Views/Products/CSVImportView.swift` |
 | テーブル画面を変える | `Views/Tables/` |
 | 商品管理を変える | `Views/Products/` |
 | 会計履歴を変える | `Views/History/` |
 | 設定画面を変える | `Views/Settings/` |
 
-## 12. 関連文書
+## 13. 関連文書
 
 - [requirements.md](requirements.md): 合意済み要件と受入条件
 - [ARCHITECTURE.md](ARCHITECTURE.md): 設計判断
 - [DATA_MODEL.md](DATA_MODEL.md): 保存モデルと税計算式
 - [UI_FLOW.md](UI_FLOW.md): 画面遷移
 - [SEARCH.md](SEARCH.md): 日本語検索の詳細
+- [CSV_IMPORT_GUIDE.md](CSV_IMPORT_GUIDE.md): メニューCSVの正式仕様と利用方法
+- [CSV_IMPORT_REQUIREMENTS.md](CSV_IMPORT_REQUIREMENTS.md): CSV取込の機能要件と受入条件
 - [TODO.md](TODO.md): 実装済み・未実装一覧

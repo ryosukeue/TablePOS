@@ -1,6 +1,6 @@
 import Foundation
 
-enum TaxRate: Int, CaseIterable, Identifiable, Codable {
+enum TaxRate: Int, CaseIterable, Identifiable, Codable, Sendable {
     case reduced = 8
     case standard = 10
 
@@ -8,7 +8,7 @@ enum TaxRate: Int, CaseIterable, Identifiable, Codable {
     var label: String { "\(rawValue)%" }
 }
 
-enum TaxType: String, CaseIterable, Identifiable, Codable {
+enum TaxType: String, CaseIterable, Identifiable, Codable, Sendable {
     case included
     case excluded
 
@@ -16,7 +16,7 @@ enum TaxType: String, CaseIterable, Identifiable, Codable {
     var label: String { self == .included ? "内税" : "外税" }
 }
 
-enum MenuType: String, CaseIterable, Identifiable, Codable {
+enum MenuType: String, CaseIterable, Identifiable, Codable, Sendable {
     case grand
     case limited
 
