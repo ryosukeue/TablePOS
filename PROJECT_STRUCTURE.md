@@ -228,4 +228,3 @@ OCRは税率や内税・外税を自動判断しません。保存前の確認�
 - [UI_FLOW.md](UI_FLOW.md): 画面遷移
 - [SEARCH.md](SEARCH.md): 日本語検索の詳細
 - [TODO.md](TODO.md): 実装済み・未実装一覧
-
