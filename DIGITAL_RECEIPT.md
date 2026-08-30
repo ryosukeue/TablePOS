@@ -27,7 +27,7 @@ QRコードには選択した1会計だけを、バージョン付きJSONとし�
 QRコードは次の形式です。
 
 ```text
-https://ryosukeue.github.io/TablePOS/receipt/#r1.<会計データ>
+https://ryosukeue.github.io/TablePOS-ReceiptViewer/receipt/#r1.<会計データ>
 ```
 
 会計データはURLの`#`以降にあります。ブラウザは`#`以降をWebサーバーへ送らないため、GitHub Pagesは静的な表示プログラムだけを配信し、レシート内容を受信・保存しません。表示ページにもAPI通信、アカウント、広告、アクセス解析はありません。
@@ -44,7 +44,8 @@ QRコードは発行時点の会計スナップショットです。サーバー
 
 ## 公開ファイル
 
-- `docs/receipt/index.html`: お客様向けレシートビューア
+- 公開先: `https://ryosukeue.github.io/TablePOS-ReceiptViewer/receipt/`
+- `docs/receipt/index.html`: お客様向けレシートビューア（公開リポジトリへ同じ内容を配信）
 - `docs/index.html`: GitHub Pagesの入口
 - `TablePOS/Services/DigitalReceiptService.swift`: QR用データ、QR画像、PDFの生成
 - `TablePOS/Views/History/DigitalReceiptView.swift`: 店舗端末の表示・共有画面

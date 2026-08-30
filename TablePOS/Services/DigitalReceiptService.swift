@@ -60,7 +60,7 @@ enum DigitalReceiptError: LocalizedError {
 }
 
 enum DigitalReceiptService {
-    static let viewerBaseURL = "https://ryosukeue.github.io/TablePOS/receipt/"
+    static let viewerBaseURL = "https://ryosukeue.github.io/TablePOS-ReceiptViewer/receipt/"
     private static let practicalQRByteLimit = 1_800
 
     static func payload(sale: Sale, items: [SaleItem]) -> DigitalReceiptPayload {
