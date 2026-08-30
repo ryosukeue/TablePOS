@@ -54,6 +54,12 @@ Vision text recognition receives an in-memory image and runs locally. Images are
 
 `MenuCSVImportService` handles file access, UTF-8/Shift_JIS decoding, RFC-style quoted fields, header aliases, defaults, and row validation without mutating SwiftData. After preview, `MenuCSVProductService` applies valid rows, resolves or creates categories, handles the selected duplicate policy, and saves once. A persistence failure rolls the model context back.
 
+### Manual backup boundary
+
+SwiftData remains the local source of truth and is not configured for live cloud synchronization. `BackupService` converts the important business models into a versioned portable payload, calculates a SHA-256 checksum over canonical JSON, and exports the envelope through the system Files interface. The user can choose iCloud Drive as the destination.
+
+Restore is accepted only before initial setup. The service verifies format version, checksum, unique IDs, numeric constraints, and order/sale/cancellation references before inserting anything. Search indexes, dictionaries, OCR images, and other reproducible resources are excluded.
+
 ## Error handling
 
 The MVP shows local validation and operation errors through alerts. Save failures do not silently dismiss an editing or checkout sheet. A production release should add structured logging, store migration tests, and recovery UX.

@@ -28,4 +28,4 @@ The first launch asks for the number of tables. Sample categories and products c
 
 The MVP supports table-based orders, moving/merging tables, product management, CSV menu import, category-based quick tiles, normalized and semantic search, custom items, tax calculation, payment recording, cash change, optional ten-yen rounding, sale history, cancellation, and correction sales. OCR imports menu candidates from the camera or photo library and leaves tax fields for confirmation.
 
-No network account, cloud synchronization, printer, cash drawer, backup, sold-out management, or split payment is included.
+No network account, live cloud synchronization, printer, cash drawer, automatic backup, sold-out management, or split payment is included. A manual checksummed backup can be saved to Files/iCloud Drive and restored on a fresh installation.

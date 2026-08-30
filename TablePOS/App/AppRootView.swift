@@ -19,6 +19,7 @@ private struct InitialSetupView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var tableCount = 12
     @State private var errorMessage: String?
+    @State private var showRestore = false
 
     var body: some View {
         ZStack {
@@ -59,6 +60,11 @@ private struct InitialSetupView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+
+                Button("バックアップから復元") {
+                    showRestore = true
+                }
+                .buttonStyle(.bordered)
             }
             .frame(maxWidth: 520)
             .padding(40)
@@ -67,6 +73,18 @@ private struct InitialSetupView: View {
             Button("閉じる") { errorMessage = nil }
         } message: {
             Text(errorMessage ?? "")
+        }
+        .sheet(isPresented: $showRestore) {
+            NavigationStack {
+                BackupRestoreView(allowsExport: false) {
+                    showRestore = false
+                }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("閉じる") { showRestore = false }
+                    }
+                }
+            }
         }
     }
 }

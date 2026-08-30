@@ -9,6 +9,7 @@ Provide a fast, low-maintenance iPad register for one restaurant operating one d
 - The operational target is iPad. The same target also supports iPhone for testing with a compact adaptive layout. Minimum deployment target is iOS/iPadOS 17.
 - SwiftUI for UI, SwiftData for persistence, Vision for OCR, Sudachi.rs/SudachiDict core for Japanese analysis, and Natural Language for final-stage semantic search.
 - All MVP business data and processing remain on the device.
+- A user-triggered portable backup may be saved through the system file picker, including to iCloud Drive. This is not live CloudKit synchronization.
 - A clean build may download the pinned dictionary artifact and verify its checksum. The built/installed application must not require a network connection for search.
 - One store and one active device. No user accounts or staff permissions in the MVP.
 - Monetary values are stored as integer Japanese yen.
@@ -103,7 +104,7 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 
 - Multi-device sync, cloud sync, accounts, roles, and multi-store support
 - Receipt printers and cash drawers
-- Automated backup and restore
+- Automated/scheduled backup and multi-device synchronization
 - Inventory and sold-out management
 - Split bills and split payments
 - Production CSV export UI (the stored schema must permit it later)
@@ -121,3 +122,4 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 8. A documented sample CSV produces a validation preview and imports products; invalid rows show their source line numbers.
 9. Core operations remain usable without a network connection.
 10. Product master records can be filtered by category, edited after CSV import, and deleted using multi-selection.
+11. Settings can export a checksummed backup of all business records, and a fresh installation can validate and restore it before initial setup.

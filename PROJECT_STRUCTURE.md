@@ -52,6 +52,7 @@ TablePOS/
 │   ├── OCRService.swift         # Vision OCRと商品・価格候補抽出
 │   ├── MenuCSVImportService.swift # CSV解析、文字コード判定、行検証
 │   ├── MenuCSVProductService.swift # CSV商品・カテゴリの一括保存
+│   ├── BackupService.swift       # 重要データの書出し、検証、初期復元
 │   └── Formatting.swift         # 円表示、色などの共通処理
 │
 ├── Views/
@@ -67,7 +68,8 @@ TablePOS/
 │   ├── History/
 │   │   └── SaleHistoryView.swift # 会計履歴、取消・訂正
 │   ├── Settings/
-│   │   └── SettingsView.swift   # 卓数、税丸め、カテゴリ設定
+│   │   ├── SettingsView.swift   # 卓数、税丸め、カテゴリ設定
+│   │   └── BackupRestoreView.swift # Files/iCloud Driveへの手動バックアップ
 │   └── Components/
 │       └── StatusViews.swift    # 空表示、金額内訳など
 │
@@ -251,4 +253,5 @@ OCRは税率や内税・外税を自動判断しません。保存前の確認�
 - [SEARCH.md](SEARCH.md): 日本語検索の詳細
 - [CSV_IMPORT_GUIDE.md](CSV_IMPORT_GUIDE.md): メニューCSVの正式仕様と利用方法
 - [CSV_IMPORT_REQUIREMENTS.md](CSV_IMPORT_REQUIREMENTS.md): CSV取込の機能要件と受入条件
+- [BACKUP_GUIDE.md](BACKUP_GUIDE.md): 手動バックアップと初期復元の操作・対象・制約
 - [TODO.md](TODO.md): 実装済み・未実装一覧

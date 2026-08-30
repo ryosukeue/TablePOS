@@ -44,6 +44,14 @@ struct SettingsView: View {
                 NavigationLink("カテゴリ管理") { CategoryManagementView() }
             }
 
+            Section("データ管理") {
+                NavigationLink {
+                    BackupRestoreView()
+                } label: {
+                    Label("バックアップと復元", systemImage: "icloud.and.arrow.up")
+                }
+            }
+
             Section {
                 Button("サンプル商品を追加") { addSamples() }
                     .disabled(!products.isEmpty)
@@ -54,10 +62,11 @@ struct SettingsView: View {
             }
 
             Section("このMVPについて") {
-                LabeledContent("データ保存", value: "この端末内")
+                LabeledContent("通常データ", value: "この端末内")
+                LabeledContent("バックアップ", value: "手動でファイル保存")
                 LabeledContent("対象", value: "1店舗・1台")
                 LabeledContent("対応", value: "iOS / iPadOS 17以降")
-                Text("同期、プリンタ、キャッシュドロア、バックアップ、売切れ、割り勘はMVP対象外です。")
+                Text("自動同期、プリンタ、キャッシュドロア、自動バックアップ、売切れ、割り勘はMVP対象外です。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

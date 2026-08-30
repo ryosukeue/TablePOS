@@ -67,6 +67,19 @@ History list -> sale detail
 
 Correction intentionally creates a new sale; the original detail remains visible as cancelled.
 
+## Backup flow
+
+```text
+Settings -> Backup and restore -> export backup
+  -> system save panel -> choose iCloud Drive or local Files
+
+Fresh-install setup -> restore from backup
+  -> choose JSON backup
+  -> verify checksum, format and references
+  -> show date and record counts
+  -> confirm -> restore -> table home
+```
+
 ## Compact iPhone test layout
 
 The iPhone layout keeps the same data and flows. The order screen replaces the iPad two-pane layout with a `Products / Order` segmented switch so both areas remain usable at compact width. iPad remains the intended register device.

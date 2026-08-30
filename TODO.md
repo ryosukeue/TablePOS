@@ -24,6 +24,7 @@
 - [x] Cash tender/change and cash/card/QR/other payment recording
 - [x] Sale history and immutable sale-item snapshots
 - [x] Cancellation record and linked replacement correction sale
+- [x] Manual checksummed backup export to Files/iCloud Drive and fresh-install restore
 
 ## Deliberately simplified for the first build
 
@@ -39,7 +40,7 @@
 - [ ] CSV export UI
 - [ ] Multi-device/cloud sync and accounts
 - [ ] Printer/cash drawer integration
-- [ ] Backup/restore
+- [ ] Automatic/versioned CloudKit backup and existing-store merge
 - [ ] Inventory and sold-out state
 - [ ] Split bills/payments
 - [ ] Learned ranking from selection history
