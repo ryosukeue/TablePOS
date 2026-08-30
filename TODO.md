@@ -25,6 +25,7 @@
 - [x] Sale history and immutable sale-item snapshots
 - [x] Cancellation record and linked replacement correction sale
 - [x] Manual checksummed backup export to Files/iCloud Drive and fresh-install restore
+- [x] Self-contained digital-receipt QR, privacy-preserving static viewer, and native PDF fallback
 
 ## Deliberately simplified for the first build
 
@@ -44,3 +45,4 @@
 - [ ] Inventory and sold-out state
 - [ ] Split bills/payments
 - [ ] Learned ranking from selection history
+- [ ] Live hosted receipt records that remotely reflect later cancellation/correction

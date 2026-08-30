@@ -52,6 +52,7 @@ struct SaleDetailView: View {
 
     @State private var showCancel = false
     @State private var showCorrection = false
+    @State private var showReceipt = false
 
     private var items: [SaleItem] { allItems.filter { $0.saleID == sale.id } }
     private var cancellation: CancellationRecord? { cancellations.first { $0.saleID == sale.id } }
@@ -105,6 +106,11 @@ struct SaleDetailView: View {
                     LabeledContent("理由", value: cancellation.reason)
                 }
             }
+            Section("レシート") {
+                Button("デジタルレシートを表示", systemImage: "qrcode") {
+                    showReceipt = true
+                }
+            }
             if sale.status == .completed {
                 Section("修正・取消") {
                     Button("訂正版を作成", systemImage: "doc.badge.plus") { showCorrection = true }
@@ -115,6 +121,7 @@ struct SaleDetailView: View {
         .navigationTitle("会計詳細")
         .sheet(isPresented: $showCancel) { CancelSaleSheet(sale: sale) }
         .sheet(isPresented: $showCorrection) { CorrectionSaleSheet(original: sale, sourceItems: items) }
+        .sheet(isPresented: $showReceipt) { DigitalReceiptView(sale: sale, items: items) }
     }
 }
 

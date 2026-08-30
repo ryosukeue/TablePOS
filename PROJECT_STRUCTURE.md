@@ -53,6 +53,7 @@ TablePOS/
 │   ├── MenuCSVImportService.swift # CSV解析、文字コード判定、行検証
 │   ├── MenuCSVProductService.swift # CSV商品・カテゴリの一括保存
 │   ├── BackupService.swift       # 重要データの書出し、検証、初期復元
+│   ├── DigitalReceiptService.swift # 会計スナップショットのQR・PDF生成
 │   └── Formatting.swift         # 円表示、色などの共通処理
 │
 ├── Views/
@@ -66,7 +67,8 @@ TablePOS/
 │   ├── OCR/
 │   │   └── OCRImportView.swift  # 撮影・写真選択・OCR確認
 │   ├── History/
-│   │   └── SaleHistoryView.swift # 会計履歴、取消・訂正
+│   │   ├── SaleHistoryView.swift # 会計履歴、取消・訂正
+│   │   └── DigitalReceiptView.swift # QR表示とPDF共有
 │   ├── Settings/
 │   │   ├── SettingsView.swift   # 卓数、税丸め、カテゴリ設定
 │   │   └── BackupRestoreView.swift # Files/iCloud Driveへの手動バックアップ
@@ -82,6 +84,7 @@ TablePOS/
 SudachiBridge/                    # Rust製C ABIブリッジのソース
 Scripts/                          # 辞書取得、XCFramework再生成
 ThirdPartyLicenses/               # Sudachi関連ライセンス
+docs/                             # GitHub Pages用の静的レシートビューア
 ```
 
 ## 4. アプリ起動と画面構成
@@ -242,6 +245,7 @@ OCRは税率や内税・外税を自動判断しません。保存前の確認�
 | テーブル画面を変える | `Views/Tables/` |
 | 商品管理を変える | `Views/Products/` |
 | 会計履歴を変える | `Views/History/` |
+| デジタルレシートを変える | `Services/DigitalReceiptService.swift`、`Views/History/DigitalReceiptView.swift`、`docs/receipt/` |
 | 設定画面を変える | `Views/Settings/` |
 
 ## 13. 関連文書
@@ -254,4 +258,5 @@ OCRは税率や内税・外税を自動判断しません。保存前の確認�
 - [CSV_IMPORT_GUIDE.md](CSV_IMPORT_GUIDE.md): メニューCSVの正式仕様と利用方法
 - [CSV_IMPORT_REQUIREMENTS.md](CSV_IMPORT_REQUIREMENTS.md): CSV取込の機能要件と受入条件
 - [BACKUP_GUIDE.md](BACKUP_GUIDE.md): 手動バックアップと初期復元の操作・対象・制約
+- [DIGITAL_RECEIPT.md](DIGITAL_RECEIPT.md): QRレシートの利用方法、データ、プライバシー、容量制約
 - [TODO.md](TODO.md): 実装済み・未実装一覧

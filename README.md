@@ -23,9 +23,11 @@ The first launch asks for the number of tables. Sample categories and products c
 - [UI_FLOW.md](UI_FLOW.md): screens and core flows
 - [TODO.md](TODO.md): implemented scope and remaining work
 - [SEARCH.md](SEARCH.md): Japanese normalization, ranking, fallback, and dictionary build details
+- [BACKUP_GUIDE.md](BACKUP_GUIDE.md): important-data backup and fresh-install restore
+- [DIGITAL_RECEIPT.md](DIGITAL_RECEIPT.md): QR receipt usage, privacy model, capacity, and PDF fallback
 
 ## Current scope
 
-The MVP supports table-based orders, moving/merging tables, product management, CSV menu import, category-based quick tiles, normalized and semantic search, custom items, tax calculation, payment recording, cash change, optional ten-yen rounding, sale history, cancellation, and correction sales. OCR imports menu candidates from the camera or photo library and leaves tax fields for confirmation.
+The MVP supports table-based orders, moving/merging tables, product management, CSV menu import, category-based quick tiles, normalized and semantic search, custom items, tax calculation, payment recording, cash change, optional ten-yen rounding, sale history, cancellation, correction sales, and self-contained QR/PDF digital receipts. OCR imports menu candidates from the camera or photo library and leaves tax fields for confirmation.
 
 No network account, live cloud synchronization, printer, cash drawer, automatic backup, sold-out management, or split payment is included. A manual checksummed backup can be saved to Files/iCloud Drive and restored on a fresh installation.

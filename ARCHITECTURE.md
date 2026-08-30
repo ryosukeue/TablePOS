@@ -60,6 +60,12 @@ SwiftData remains the local source of truth and is not configured for live cloud
 
 Restore is accepted only before initial setup. The service verifies format version, checksum, unique IDs, numeric constraints, and order/sale/cancellation references before inserting anything. Search indexes, dictionaries, OCR images, and other reproducible resources are excluded.
 
+### Digital receipt boundary
+
+`DigitalReceiptService` serializes one `Sale` and its immutable `SaleItem` snapshots into a versioned compact JSON payload. It base64url-encodes that payload into the fragment of a static viewer URL. URL fragments are processed by the customer's browser and are not included in the HTTP request to the host. The viewer makes no network/API calls after its static files load and renders untrusted product names with DOM `textContent` rather than HTML injection.
+
+QR generation applies a conservative 1,800-byte URL ceiling because theoretical QR capacity is not a useful guarantee for phone-camera scanning. Oversized receipts keep the full native PDF export path. The QR is not a live server record: already-issued receipts do not update after cancellation or correction.
+
 ## Error handling
 
 The MVP shows local validation and operation errors through alerts. Save failures do not silently dismiss an editing or checkout sheet. A production release should add structured logging, store migration tests, and recovery UX.

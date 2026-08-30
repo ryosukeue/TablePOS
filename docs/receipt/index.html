@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:">
+  <title>TablePOS デジタルレシート</title>
+  <style>
+    :root { color-scheme: light; font-family: -apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif; background:#f3f4f6; color:#111827 }
+    * { box-sizing:border-box }
+    body { margin:0; padding:24px 14px 48px }
+    main { max-width:520px; margin:auto }
+    .receipt { background:#fff; border-radius:18px; padding:26px 22px; box-shadow:0 8px 32px #0f172a18 }
+    h1 { margin:0; text-align:center; font-size:24px }
+    .muted { color:#6b7280; font-size:13px }
+    .center { text-align:center }
+    .status { margin:14px 0; padding:9px; text-align:center; border-radius:10px; background:#fee2e2; color:#b91c1c; font-weight:700 }
+    .meta { margin:20px 0; display:grid; gap:7px }
+    .line { display:grid; grid-template-columns:1fr auto; gap:12px; padding:13px 0; border-top:1px solid #e5e7eb }
+    .line-name { font-weight:650 }
+    .line-detail { color:#6b7280; font-size:12px; margin-top:4px }
+    .amount { white-space:nowrap; font-weight:650 }
+    .totals { border-top:2px solid #111827; padding-top:12px; display:grid; gap:7px }
+    .total-row { display:flex; justify-content:space-between; gap:12px }
+    .grand { font-size:21px; font-weight:800; margin-top:5px }
+    .id { overflow-wrap:anywhere; font-family:ui-monospace,monospace; font-size:10px }
+    .actions { display:grid; gap:10px; margin-top:16px }
+    button { appearance:none; border:0; border-radius:12px; padding:14px 16px; font-size:16px; font-weight:700; background:#2563eb; color:#fff }
+    button.secondary { background:#fff; color:#1f2937; border:1px solid #d1d5db }
+    .error { background:#fff; border-radius:18px; padding:28px; color:#b91c1c }
+    footer { text-align:center; color:#6b7280; font-size:11px; margin-top:14px }
+    @media print {
+      body { background:#fff; padding:0 }
+      .receipt { box-shadow:none; border-radius:0; max-width:none }
+      .actions, footer { display:none }
+    }
+  </style>
+</head>
+<body>
+  <main id="app"><div class="receipt center">レシートを読み込んでいます…</div></main>
+  <script>
+    (() => {
+      "use strict";
+      const app = document.getElementById("app");
+      const yen = value => new Intl.NumberFormat("ja-JP", { style:"currency", currency:"JPY", maximumFractionDigits:0 }).format(value || 0);
+      const text = (tag, value, className) => {
+        const node = document.createElement(tag);
+        node.textContent = value;
+        if (className) node.className = className;
+        return node;
+      };
+      const row = (label, value, className="total-row") => {
+        const node = document.createElement("div"); node.className = className;
+        node.append(text("span", label), text("span", value)); return node;
+      };
+      const decode = () => {
+        const hash = location.hash.slice(1);
+        if (!hash.startsWith("r1.")) throw new Error("QRコードにレシートデータがありません。");
+        let value = hash.slice(3).replace(/-/g, "+").replace(/_/g, "/");
+        value += "=".repeat((4 - value.length % 4) % 4);
+        const binary = atob(value);
+        const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+        return JSON.parse(new TextDecoder().decode(bytes));
+      };
+      const payment = { cash:"現金", card:"カード", qr:"QR", other:"その他" };
+      const taxType = { included:"内税", excluded:"外税" };
+      const render = receipt => {
+        if (receipt.v !== 1 || !Array.isArray(receipt.i)) throw new Error("未対応のレシート形式です。");
+        const card = document.createElement("section"); card.className = "receipt";
+        card.append(text("h1", "TablePOS デジタルレシート"));
+        card.append(text("p", new Date(receipt.at * 1000).toLocaleString("ja-JP"), "muted center"));
+        if (receipt.s === "cancelled") card.append(text("div", "取消済み", "status"));
+        const meta = document.createElement("div"); meta.className = "meta";
+        meta.append(row("テーブル", receipt.tb || "—"), row("支払方法", payment[receipt.pm] || receipt.pm || "—"));
+        card.append(meta);
+        const lines = document.createElement("div");
+        receipt.i.forEach(item => {
+          const line = document.createElement("div"); line.className = "line";
+          const left = document.createElement("div");
+          left.append(text("div", item.n || "（名称なし）", "line-name"));
+          left.append(text("div", `${yen(item.p)} × ${item.q}・${item.r}% ${taxType[item.t] || item.t}`, "line-detail"));
+          line.append(left, text("div", yen(item.p * item.q), "amount")); lines.append(line);
+        });
+        card.append(lines);
+        const totals = document.createElement("div"); totals.className = "totals";
+        totals.append(row("小計", yen(receipt.sub)));
+        if (receipt.it8) totals.append(row("内税8%", yen(receipt.it8)));
+        if (receipt.it10) totals.append(row("内税10%", yen(receipt.it10)));
+        if (receipt.et8) totals.append(row("外税8%", yen(receipt.et8)));
+        if (receipt.et10) totals.append(row("外税10%", yen(receipt.et10)));
+        if (receipt.adj) totals.append(row("丸め調整", yen(receipt.adj)));
+        totals.append(row("合計", yen(receipt.tot), "total-row grand"));
+        if (receipt.recv != null) totals.append(row("預かり", yen(receipt.recv)));
+        if (receipt.chg != null) totals.append(row("お釣り", yen(receipt.chg)));
+        card.append(totals);
+        card.append(text("p", `会計ID ${receipt.id}`, "muted id"));
+
+        const actions = document.createElement("div"); actions.className = "actions";
+        const pdf = text("button", "PDFとして保存・印刷"); pdf.addEventListener("click", () => window.print());
+        const json = text("button", "レシートデータを保存", "secondary");
+        json.addEventListener("click", async () => {
+          const filename = `TablePOS-receipt-${String(receipt.id).slice(0,8)}.json`;
+          const file = new File([JSON.stringify(receipt, null, 2)], filename, { type:"application/json" });
+          if (navigator.canShare && navigator.canShare({ files:[file] })) {
+            try {
+              await navigator.share({ files:[file], title:"TablePOS デジタルレシート" });
+              return;
+            } catch (error) {
+              if (error.name === "AbortError") return;
+            }
+          }
+          const url = URL.createObjectURL(file); const anchor = document.createElement("a");
+          anchor.href = url; anchor.download = filename;
+          document.body.append(anchor); anchor.click(); anchor.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        });
+        actions.append(pdf, json); card.append(actions);
+        app.replaceChildren(card, text("footer", "レシート情報はQRコード内で保持され、この表示ページへ送信・保存されません。"));
+      };
+      try { render(decode()); }
+      catch (error) { const box = text("div", error.message || "レシートを表示できません。", "error"); app.replaceChildren(box); }
+    })();
+  </script>
+</body>
+</html>

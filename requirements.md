@@ -9,6 +9,7 @@ Provide a fast, low-maintenance iPad register for one restaurant operating one d
 - The operational target is iPad. The same target also supports iPhone for testing with a compact adaptive layout. Minimum deployment target is iOS/iPadOS 17.
 - SwiftUI for UI, SwiftData for persistence, Vision for OCR, Sudachi.rs/SudachiDict core for Japanese analysis, and Natural Language for final-stage semantic search.
 - All MVP business data and processing remain on the device.
+- Digital-receipt QR codes embed the completed sale snapshot in the URL fragment. The static viewer receives no receipt payload over HTTP and performs no analytics or API calls.
 - A user-triggered portable backup may be saved through the system file picker, including to iCloud Drive. This is not live CloudKit synchronization.
 - A clean build may download the pinned dictionary artifact and verify its checksum. The built/installed application must not require a network connection for search.
 - One store and one active device. No user accounts or staff permissions in the MVP.
@@ -100,7 +101,17 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 - The original and replacement reference each other; a cancellation record retains the reason and relationship.
 - The data model must remain suitable for later CSV sales export.
 
-## 11. Explicitly out of MVP scope
+## 11. Digital receipts
+
+- Sale detail can generate a QR code containing that sale's item snapshots, tax totals, payment method, tender/change, status, and audit-link IDs.
+- The QR contains only the selected sale, not the product master or other business records. Product-master size therefore does not affect QR capacity.
+- A customer can scan the QR to open a static mobile viewer and print/save it as PDF or save the embedded JSON data.
+- Receipt data is placed after `#` in the URL so it is not sent to the static host. The viewer has no server-side receipt storage, account, tracking, or analytics.
+- A practical encoded-URL limit is enforced for reliable scanning. When a sale is too large, the register explains this and retains PDF share/save as a lossless fallback.
+- The register can generate and share the PDF directly without relying on the viewer.
+- A receipt is an immutable checkout snapshot. Cancelling or correcting a sale does not remotely rewrite an already issued QR; its sale ID and recorded status remain auditable against the register history.
+
+## 12. Explicitly out of MVP scope
 
 - Multi-device sync, cloud sync, accounts, roles, and multi-store support
 - Receipt printers and cash drawers
@@ -110,7 +121,7 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 - Production CSV export UI (the stored schema must permit it later)
 - Automated semantic-learning from historical selection behavior
 
-## 12. MVP acceptance criteria
+## 13. MVP acceptance criteria
 
 1. A clean clone opens as an Xcode project and, with network access for the pinned dictionary build artifact, builds for iPad and iPhone simulators.
 2. First-run setup creates the configured number of table tiles.
@@ -123,3 +134,4 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 9. Core operations remain usable without a network connection.
 10. Product master records can be filtered by category, edited after CSV import, and deleted using multi-selection.
 11. Settings can export a checksummed backup of all business records, and a fresh installation can validate and restore it before initial setup.
+12. A sale detail can show a self-contained digital-receipt QR when it fits the practical capacity and can always export the receipt as PDF.

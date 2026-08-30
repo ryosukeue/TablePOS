@@ -60,6 +60,8 @@ Products tab
 
 ```text
 History list -> sale detail
+  -> digital receipt -> show QR -> customer mobile viewer -> print/save PDF or JSON
+                     -> oversized payload -> share/save native PDF
   -> cancel -> reason -> status becomes cancelled
   -> correct -> editable copied lines -> create replacement sale
                 and cancel/link original sale
