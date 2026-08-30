@@ -13,6 +13,7 @@ struct OrderView: View {
 
     let table: DiningTable
     @State private var searchText = ""
+    @State private var categoryFilter: OrderCategoryFilter = .all
     @State private var showCustomItem = false
     @State private var showMove = false
     @State private var showCheckout = false
@@ -114,13 +115,30 @@ struct OrderView: View {
             }
             .padding(12)
             .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
-            .padding()
+            .padding(.horizontal)
+            .padding(.top)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    categoryButton(title: "すべて", filter: .all, color: .indigo)
+                    ForEach(categories) { category in
+                        categoryButton(
+                            title: category.name,
+                            filter: .category(category.id),
+                            color: Color(hex: category.colorHex)
+                        )
+                    }
+                    categoryButton(title: "未分類", filter: .uncategorized, color: .gray)
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 10)
+            }
 
             ScrollView {
                 if searchText.isEmpty {
                     frequentProducts
                 } else {
-                    productGrid(ProductSearch.ranked(products.filter(\.isEnabled), query: searchText))
+                    productGrid(ProductSearch.ranked(categoryFilteredProducts, query: searchText), color: selectedCategoryColor)
                         .padding()
                 }
             }
@@ -131,7 +149,19 @@ struct OrderView: View {
     @ViewBuilder
     private var frequentProducts: some View {
         let frequent = products.filter { $0.isEnabled && $0.isFrequent }
-        if frequent.isEmpty {
+        if categoryFilter != .all {
+            if categoryFilteredProducts.isEmpty {
+                EmptyStateView(
+                    title: "商品がありません",
+                    message: "このカテゴリに有効な商品はありません。",
+                    systemImage: "line.3.horizontal.decrease.circle"
+                )
+                .padding(.top, 40)
+            } else {
+                productGrid(categoryFilteredProducts, color: selectedCategoryColor)
+                    .padding()
+            }
+        } else if frequent.isEmpty {
             EmptyStateView(
                 title: "頻出商品がありません",
                 message: "商品画面で頻出を有効にすると、ここへ自動配置されます。",
@@ -163,6 +193,44 @@ struct OrderView: View {
             }
             .padding()
         }
+    }
+
+    private var categoryFilteredProducts: [Product] {
+        products.filter { product in
+            guard product.isEnabled else { return false }
+            switch categoryFilter {
+            case .all:
+                return true
+            case .category(let id):
+                return product.categoryID == id
+            case .uncategorized:
+                return product.categoryID == nil || !categories.contains { $0.id == product.categoryID }
+            }
+        }
+    }
+
+    private var selectedCategoryColor: Color {
+        switch categoryFilter {
+        case .all: return .indigo
+        case .uncategorized: return .gray
+        case .category(let id):
+            return Color(hex: categories.first { $0.id == id }?.colorHex ?? "64748B")
+        }
+    }
+
+    private func categoryButton(title: String, filter: OrderCategoryFilter, color: Color) -> some View {
+        Button {
+            categoryFilter = filter
+        } label: {
+            Text(title)
+                .font(.subheadline.weight(categoryFilter == filter ? .bold : .medium))
+                .foregroundStyle(categoryFilter == filter ? .white : .primary)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(categoryFilter == filter ? color : Color(.secondarySystemGroupedBackground), in: Capsule())
+                .overlay { Capsule().stroke(color.opacity(0.45)) }
+        }
+        .buttonStyle(.plain)
     }
 
     private func productGrid(_ source: [Product], color: Color = .indigo) -> some View {
@@ -231,6 +299,12 @@ struct OrderView: View {
             }
         }
     }
+}
+
+private enum OrderCategoryFilter: Hashable {
+    case all
+    case category(UUID)
+    case uncategorized
 }
 
 private struct OrderLineRow: View {

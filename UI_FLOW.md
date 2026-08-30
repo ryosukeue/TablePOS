@@ -45,6 +45,7 @@ Products tab
   -> CSV import
      -> choose CSV/text file
      -> validation preview and line errors
+     -> tap any row -> correct values -> automatic revalidation
      -> choose update/skip for existing names
      -> import valid products and create missing categories
   -> OCR import

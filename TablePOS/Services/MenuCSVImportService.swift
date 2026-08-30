@@ -22,6 +22,20 @@ struct MenuCSVRow: Identifiable, Sendable {
     let isEnabled: Bool
 }
 
+struct MenuCSVRowDraft: Identifiable, Sendable {
+    var id: Int { lineNumber }
+
+    let lineNumber: Int
+    var name: String
+    var price: String
+    var taxRate: String
+    var taxType: String
+    var menuType: String
+    var categoryName: String
+    var isFrequent: String
+    var isEnabled: String
+}
+
 struct MenuCSVValidationIssue: Identifiable, Sendable {
     let id = UUID()
     let lineNumber: Int
@@ -30,6 +44,7 @@ struct MenuCSVValidationIssue: Identifiable, Sendable {
 
 struct MenuCSVImportResult: Sendable {
     let fileName: String
+    let drafts: [MenuCSVRowDraft]
     let rows: [MenuCSVRow]
     let issues: [MenuCSVValidationIssue]
 }
@@ -92,43 +107,50 @@ enum MenuCSVImportService {
         guard columns[.name] != nil else { throw MenuCSVImportError.missingRequiredHeader("name / 商品名") }
         guard columns[.price] != nil else { throw MenuCSVImportError.missingRequiredHeader("price / 価格") }
 
-        var rows: [MenuCSVRow] = []
-        var issues: [MenuCSVValidationIssue] = []
-        var seenNames = Set<String>()
+        var drafts: [MenuCSVRowDraft] = []
 
         for record in records.dropFirst() {
             guard record.fields.contains(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) else {
                 continue
             }
 
-            let name = value(.name, in: record, columns: columns)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            let priceText = value(.price, in: record, columns: columns)
+            drafts.append(MenuCSVRowDraft(
+                lineNumber: record.lineNumber,
+                name: value(.name, in: record, columns: columns),
+                price: value(.price, in: record, columns: columns),
+                taxRate: value(.taxRate, in: record, columns: columns),
+                taxType: value(.taxType, in: record, columns: columns),
+                menuType: value(.menuType, in: record, columns: columns),
+                categoryName: value(.category, in: record, columns: columns),
+                isFrequent: value(.isFrequent, in: record, columns: columns),
+                isEnabled: value(.isEnabled, in: record, columns: columns)
+            ))
+        }
+
+        return validate(drafts: drafts, fileName: fileName)
+    }
+
+    static func validate(drafts: [MenuCSVRowDraft], fileName: String) -> MenuCSVImportResult {
+        var rows: [MenuCSVRow] = []
+        var issues: [MenuCSVValidationIssue] = []
+        var seenNames = Set<String>()
+
+        for draft in drafts {
+            let name = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            let price = parsePrice(draft.price)
+            let taxRate = parseTaxRate(draft.taxRate)
+            let taxType = parseTaxType(draft.taxType)
+            let menuType = parseMenuType(draft.menuType)
+            let frequent = parseBoolean(draft.isFrequent, defaultValue: false)
+            let enabled = parseBoolean(draft.isEnabled, defaultValue: true)
             var rowIssues: [String] = []
 
             if name.isEmpty { rowIssues.append("商品名が空です") }
-            let price = parsePrice(priceText)
             if price == nil { rowIssues.append("価格は0以上の整数で入力してください") }
-
-            let taxRate = parseTaxRate(value(.taxRate, in: record, columns: columns))
             if taxRate == nil { rowIssues.append("税率は8または10で入力してください") }
-
-            let taxType = parseTaxType(value(.taxType, in: record, columns: columns))
             if taxType == nil { rowIssues.append("税区分はincluded/内税またはexcluded/外税で入力してください") }
-
-            let menuType = parseMenuType(value(.menuType, in: record, columns: columns))
             if menuType == nil { rowIssues.append("メニュー区分はgrand/グランドまたはlimited/期間限定で入力してください") }
-
-            let frequent = parseBoolean(
-                value(.isFrequent, in: record, columns: columns),
-                defaultValue: false
-            )
             if frequent == nil { rowIssues.append("頻出はtrue/false、1/0、はい/いいえで入力してください") }
-
-            let enabled = parseBoolean(
-                value(.isEnabled, in: record, columns: columns),
-                defaultValue: true
-            )
             if enabled == nil { rowIssues.append("有効はtrue/false、1/0、はい/いいえで入力してください") }
 
             let duplicateKey = name.precomposedStringWithCompatibilityMapping
@@ -139,27 +161,26 @@ enum MenuCSVImportService {
 
             if !rowIssues.isEmpty {
                 issues.append(contentsOf: rowIssues.map {
-                    MenuCSVValidationIssue(lineNumber: record.lineNumber, message: $0)
+                    MenuCSVValidationIssue(lineNumber: draft.lineNumber, message: $0)
                 })
                 continue
             }
 
             seenNames.insert(duplicateKey)
             rows.append(MenuCSVRow(
-                lineNumber: record.lineNumber,
+                lineNumber: draft.lineNumber,
                 name: name,
                 price: price ?? 0,
                 taxRate: taxRate ?? .standard,
                 taxType: taxType ?? .included,
                 menuType: menuType ?? .grand,
-                categoryName: value(.category, in: record, columns: columns)
-                    .trimmingCharacters(in: .whitespacesAndNewlines),
+                categoryName: draft.categoryName.trimmingCharacters(in: .whitespacesAndNewlines),
                 isFrequent: frequent ?? false,
                 isEnabled: enabled ?? true
             ))
         }
 
-        return MenuCSVImportResult(fileName: fileName, rows: rows, issues: issues)
+        return MenuCSVImportResult(fileName: fileName, drafts: drafts, rows: rows, issues: issues)
     }
 }
 

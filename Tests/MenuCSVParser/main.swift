@@ -54,8 +54,19 @@ name,price,tax_rate,tax_type
 """
 let invalidResult = try MenuCSVImportService.parse(text: invalid)
 check(invalidResult.rows.count == 1, "valid rows survive invalid rows")
+check(invalidResult.drafts.count == 3, "invalid rows remain editable")
 check(invalidResult.issues.contains { $0.lineNumber == 2 }, "invalid line number")
 check(invalidResult.issues.contains { $0.lineNumber == 4 && $0.message.contains("同名") }, "duplicate row")
+
+var correctedDrafts = invalidResult.drafts
+correctedDrafts[0].name = "生ビール"
+correctedDrafts[0].price = "600"
+correctedDrafts[0].taxRate = "10"
+correctedDrafts[0].taxType = "内税"
+correctedDrafts[2].name = "枝豆（大）"
+let correctedResult = MenuCSVImportService.validate(drafts: correctedDrafts, fileName: "corrected.csv")
+check(correctedResult.rows.count == 3, "edited rows become importable")
+check(correctedResult.issues.isEmpty, "edited rows are revalidated")
 
 do {
     _ = try MenuCSVImportService.parse(text: "name\n生ビール")

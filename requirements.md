@@ -32,6 +32,7 @@ Provide a fast, low-maintenance iPad register for one restaurant operating one d
 - Each product has name, integer price, tax rate (8% or 10%), tax type (tax included or tax excluded), menu type, category, frequent flag, and enabled flag.
 - Categories have name, color, and sort order.
 - Frequent products appear automatically as quick tiles grouped by category and colored with the category color.
+- The ordering screen provides category chips. Selecting a category shows every enabled product in that category and constrains text search to that category.
 - Repeated taps on the same product tile increase the quantity of the existing matching line.
 - The order supports direct quantity entry and line removal.
 - A custom item may have a blank name. Price, tax rate, tax type, and quantity are required.
@@ -47,6 +48,7 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 - UTF-8, UTF-8 with BOM, and Shift_JIS input are supported. Quoted commas, escaped quotes, quoted newlines, LF, and CRLF are parsed as CSV.
 - Files are limited to 5MB and 10,000 data rows.
 - Before saving, the UI shows valid-row counts, a product preview, validation errors, and original line numbers. Invalid rows are excluded while valid rows remain importable.
+- Every parsed CSV row, including an invalid row, remains editable in the pre-import preview. Editing triggers validation again so minor errors can be corrected without changing and reselecting the source file.
 - Duplicate names within one CSV are rejected after the first valid row.
 - For a name matching an existing product after trimming and Unicode compatibility normalization, the user chooses either update or skip. Import never deletes products absent from the file.
 - An unknown non-empty category is created automatically with an assigned color. An empty category remains uncategorized.

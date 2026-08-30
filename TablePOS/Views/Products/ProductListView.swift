@@ -3,13 +3,13 @@ import SwiftUI
 
 struct ProductListView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.editMode) private var editMode
     @Query(sort: \Product.name) private var products: [Product]
     @Query(sort: \ProductCategory.sortOrder) private var categories: [ProductCategory]
 
     @State private var searchText = ""
     @State private var categoryFilter: ProductCategoryFilter = .all
     @State private var selectedProductIDs: Set<UUID> = []
+    @State private var isSelecting = false
     @State private var editingProduct: Product?
     @State private var showNewProduct = false
     @State private var showOCR = false
@@ -34,9 +34,15 @@ struct ProductListView: View {
     }
 
     var body: some View {
-        List(selection: $selectedProductIDs) {
+        List {
             ForEach(filteredProducts) { product in
                 HStack(spacing: 12) {
+                    if isSelecting {
+                        Image(systemName: selectedProductIDs.contains(product.id)
+                              ? "checkmark.circle.fill" : "circle")
+                            .font(.title3)
+                            .foregroundStyle(selectedProductIDs.contains(product.id) ? .blue : .secondary)
+                    }
                     RoundedRectangle(cornerRadius: 4)
                         .fill(categoryColor(for: product))
                         .frame(width: 8, height: 42)
@@ -58,19 +64,23 @@ struct ProductListView: View {
                     if !product.isEnabled {
                         Text("無効").foregroundStyle(.secondary)
                     }
-                    if editMode?.wrappedValue != .active {
+                    if !isSelecting {
                         Image(systemName: "chevron.right").foregroundStyle(.tertiary)
                     }
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    guard editMode?.wrappedValue != .active else { return }
-                    editingProduct = product
+                    if isSelecting {
+                        toggleSelection(product.id)
+                    } else {
+                        editingProduct = product
+                    }
                 }
-                .tag(product.id)
                 .swipeActions {
-                    Button("削除", role: .destructive) {
-                        delete([product])
+                    if !isSelecting {
+                        Button("削除", role: .destructive) {
+                            delete([product])
+                        }
                     }
                 }
             }
@@ -99,19 +109,23 @@ struct ProductListView: View {
                 }
             }
             ToolbarItemGroup(placement: .topBarTrailing) {
-                if editMode?.wrappedValue == .active {
-                    Button("削除", role: .destructive) {
+                if isSelecting {
+                    Button {
                         showBulkDeleteConfirmation = true
+                    } label: {
+                        Label("\(selectedProductIDs.count)件を削除", systemImage: "trash")
                     }
+                    .tint(.red)
                     .disabled(selectedProductIDs.isEmpty)
+                    Button("完了") { finishSelecting() }
                 } else {
                     Menu("読み込み", systemImage: "square.and.arrow.down") {
                         Button("CSVから読み込む", systemImage: "tablecells") { showCSV = true }
                         Button("OCRで読み込む", systemImage: "text.viewfinder") { showOCR = true }
                     }
                     Button("追加", systemImage: "plus") { showNewProduct = true }
+                    Button("選択") { isSelecting = true }
                 }
-                EditButton()
             }
         }
         .sheet(isPresented: $showNewProduct) { ProductFormView(product: nil) }
@@ -134,9 +148,6 @@ struct ProductListView: View {
             Button("閉じる") { errorMessage = nil }
         } message: {
             Text(errorMessage ?? "")
-        }
-        .onChange(of: editMode?.wrappedValue) { _, mode in
-            if mode != .active { selectedProductIDs.removeAll() }
         }
         .onChange(of: categoryFilter) { _, _ in selectedProductIDs.removeAll() }
         .onChange(of: searchText) { _, _ in selectedProductIDs.removeAll() }
@@ -169,12 +180,25 @@ struct ProductListView: View {
             try modelContext.save()
             selectedProductIDs.subtract(productsToDelete.map(\.id))
             if selectedProductIDs.isEmpty {
-                editMode?.wrappedValue = .inactive
+                isSelecting = false
             }
         } catch {
             modelContext.rollback()
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func toggleSelection(_ id: UUID) {
+        if selectedProductIDs.contains(id) {
+            selectedProductIDs.remove(id)
+        } else {
+            selectedProductIDs.insert(id)
+        }
+    }
+
+    private func finishSelecting() {
+        selectedProductIDs.removeAll()
+        isSelecting = false
     }
 
     @MainActor

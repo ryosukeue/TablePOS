@@ -16,6 +16,8 @@
 - [x] Unicode/kana normalization, Sudachi normalized/readings/tokens, Japanese edit similarity, and optional `NLEmbedding` ranking
 - [x] Vision OCR from camera/photo library with editable confirmation
 - [x] UTF-8/Shift_JIS menu CSV import with validation, preview, duplicate policy, and category creation
+- [x] Pre-import CSV row correction and automatic revalidation
+- [x] Ordering-screen category filtering
 - [x] 8%/10%, included/excluded tax, aggregate excluded-tax calculation
 - [x] Configurable tax fraction rounding
 - [x] Explicit ten-yen checkout rounding with stored adjustment

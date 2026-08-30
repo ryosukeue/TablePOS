@@ -13,6 +13,7 @@ struct CSVImportView: View {
     @State private var isImporting = false
     @State private var errorMessage: String?
     @State private var successMessage: String?
+    @State private var editingDraft: MenuCSVRowDraft?
 
     var body: some View {
         NavigationStack {
@@ -38,7 +39,7 @@ struct CSVImportView: View {
                     }
                 }
 
-                if let result, !result.rows.isEmpty {
+                if let result, !result.drafts.isEmpty {
                     Section("同名商品") {
                         Picker("既存の商品名と一致した場合", selection: $duplicatePolicy) {
                             ForEach(MenuCSVDuplicatePolicy.allCases) { policy in
@@ -50,37 +51,56 @@ struct CSVImportView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    Section("取込プレビュー") {
-                        ForEach(Array(result.rows.prefix(100))) { row in
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    Text(row.name).font(.headline)
-                                    Spacer()
-                                    Text(row.price.yenText)
+                    Section("取込前の確認・修正") {
+                        ForEach(result.drafts) { draft in
+                            Button {
+                                editingDraft = draft
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: issueMessages(for: draft.lineNumber).isEmpty
+                                          ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                                        .foregroundStyle(issueMessages(for: draft.lineNumber).isEmpty ? .green : .red)
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack {
+                                            Text(draft.name.trimmingCharacters(in: .whitespacesAndNewlines).nonEmptyOrPlaceholder)
+                                                .font(.headline)
+                                            Spacer()
+                                            Text(draft.price.isEmpty ? "価格なし" : draft.price)
+                                        }
+                                        Text("\(draft.lineNumber)行目・\(draft.categoryName.isEmpty ? "未分類" : draft.categoryName)")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        if let issue = issueMessages(for: draft.lineNumber).first {
+                                            Text(issue)
+                                                .font(.caption)
+                                                .foregroundStyle(.red)
+                                        }
+                                    }
+                                    Image(systemName: "chevron.right").foregroundStyle(.tertiary)
                                 }
-                                Text("\(row.lineNumber)行目・\(row.taxRate.label) \(row.taxType.label)・\(row.menuType.label)・\(row.categoryName.isEmpty ? "未分類" : row.categoryName)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
                             }
+                            .buttonStyle(.plain)
                         }
-                        if result.rows.count > 100 {
-                            Text("ほか\(result.rows.count - 100)件")
-                                .foregroundStyle(.secondary)
-                        }
+                        Text("商品をタップすると、CSVを選び直さずに内容を修正できます。修正後は自動で再チェックします。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                if let result, result.drafts.isEmpty {
+                    Section("取込プレビュー") {
+                        Text("商品行がありません。")
+                            .foregroundStyle(.secondary)
                     }
                 }
 
                 if let result, !result.issues.isEmpty {
-                    Section("読み込めない行") {
-                        ForEach(Array(result.issues.prefix(100))) { issue in
+                    Section("修正が必要な行") {
+                        ForEach(result.issues) { issue in
                             Label("\(issue.lineNumber)行目：\(issue.message)", systemImage: "exclamationmark.triangle")
                                 .foregroundStyle(.red)
                         }
-                        if result.issues.count > 100 {
-                            Text("ほか\(result.issues.count - 100)件のエラー")
-                                .foregroundStyle(.secondary)
-                        }
-                        Text("エラー行は保存対象から除外されます。CSVを修正して選び直すこともできます。")
+                        Text("赤い行をタップして修正してください。エラーが残る行だけ保存対象から除外されます。")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -145,7 +165,24 @@ struct CSVImportView: View {
             } message: {
                 Text(successMessage ?? "")
             }
+            .sheet(item: $editingDraft) { draft in
+                CSVRowEditorView(draft: draft) { updated in
+                    updateDraft(updated)
+                }
+            }
         }
+    }
+
+    private func issueMessages(for lineNumber: Int) -> [String] {
+        result?.issues.filter { $0.lineNumber == lineNumber }.map(\.message) ?? []
+    }
+
+    private func updateDraft(_ updated: MenuCSVRowDraft) {
+        guard let result,
+              let index = result.drafts.firstIndex(where: { $0.lineNumber == updated.lineNumber }) else { return }
+        var drafts = result.drafts
+        drafts[index] = updated
+        self.result = MenuCSVImportService.validate(drafts: drafts, fileName: result.fileName)
     }
 
     private var errorBinding: Binding<Bool> {
@@ -207,6 +244,56 @@ struct CSVImportView: View {
                 errorMessage = error.localizedDescription
             }
             isImporting = false
+        }
+    }
+}
+
+private struct CSVRowEditorView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var draft: MenuCSVRowDraft
+    let onSave: (MenuCSVRowDraft) -> Void
+
+    init(draft: MenuCSVRowDraft, onSave: @escaping (MenuCSVRowDraft) -> Void) {
+        _draft = State(initialValue: draft)
+        self.onSave = onSave
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("商品") {
+                    TextField("商品名", text: $draft.name)
+                    TextField("価格", text: $draft.price)
+                        .keyboardType(.numberPad)
+                    TextField("カテゴリ（空欄は未分類）", text: $draft.categoryName)
+                }
+                Section("税・メニュー") {
+                    TextField("税率（8 または 10）", text: $draft.taxRate)
+                        .keyboardType(.numberPad)
+                    TextField("税区分（内税 または 外税）", text: $draft.taxType)
+                    TextField("メニュー区分（グランド または 期間限定）", text: $draft.menuType)
+                }
+                Section("表示") {
+                    TextField("頻出（はい または いいえ）", text: $draft.isFrequent)
+                    TextField("有効（はい または いいえ）", text: $draft.isEnabled)
+                    Text("空欄の場合、頻出はOFF、有効はONになります。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("\(draft.lineNumber)行目を修正")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("キャンセル") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("反映") {
+                        onSave(draft)
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }
