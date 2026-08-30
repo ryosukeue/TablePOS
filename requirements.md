@@ -27,7 +27,8 @@ Provide a fast, low-maintenance iPad register for one restaurant operating one d
 ## 4. Products and categories
 
 - Products are either grand-menu or limited-time products.
-- Settings provides create, edit, and delete operations for the product master.
+- The Products screen provides create and edit operations, category filtering, single deletion, and multi-selection bulk deletion for the product master.
+- Products created or updated by CSV/OCR become ordinary product-master records and remain editable with the same form as manually entered products.
 - Each product has name, integer price, tax rate (8% or 10%), tax type (tax included or tax excluded), menu type, category, frequent flag, and enabled flag.
 - Categories have name, color, and sort order.
 - Frequent products appear automatically as quick tiles grouped by category and colored with the category color.
@@ -50,6 +51,7 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 - For a name matching an existing product after trimming and Unicode compatibility normalization, the user chooses either update or skip. Import never deletes products absent from the file.
 - An unknown non-empty category is created automatically with an assigned color. An empty category remains uncategorized.
 - Product search indexes are generated during import. Imported products and new categories are saved together; a save failure is rolled back.
+- After import, every imported product can be opened and edited from the Products screen, filtered by its category, selected with other products, and deleted in bulk.
 
 ## 6. Search
 
@@ -116,3 +118,4 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 7. OCR can extract editable candidates from a selected or captured image.
 8. A documented sample CSV produces a validation preview and imports products; invalid rows show their source line numbers.
 9. Core operations remain usable without a network connection.
+10. Product master records can be filtered by category, edited after CSV import, and deleted using multi-selection.

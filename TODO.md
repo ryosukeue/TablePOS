@@ -8,6 +8,8 @@
 - [x] Active order per table with persisted item snapshots
 - [x] Table move and explicit merge
 - [x] Product and category create/edit/delete
+- [x] Product category filtering and multi-selection bulk deletion
+- [x] Edit CSV/OCR-imported products with the normal product form
 - [x] Grand/limited menu type and frequent category tiles
 - [x] Repeated tile tap quantity increment and direct quantity input
 - [x] Custom blank-name item with tax metadata

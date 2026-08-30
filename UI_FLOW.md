@@ -37,7 +37,10 @@ Table tile
 
 ```text
 Products tab
-  -> add/edit product
+  -> filter by all/category/uncategorized
+  -> tap a product -> edit product (including CSV/OCR imports)
+  -> add product
+  -> select -> select multiple products -> confirm bulk delete
   -> swipe delete
   -> CSV import
      -> choose CSV/text file

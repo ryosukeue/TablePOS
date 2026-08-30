@@ -3,53 +3,74 @@ import SwiftUI
 
 struct ProductListView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.editMode) private var editMode
     @Query(sort: \Product.name) private var products: [Product]
     @Query(sort: \ProductCategory.sortOrder) private var categories: [ProductCategory]
 
     @State private var searchText = ""
+    @State private var categoryFilter: ProductCategoryFilter = .all
+    @State private var selectedProductIDs: Set<UUID> = []
     @State private var editingProduct: Product?
     @State private var showNewProduct = false
     @State private var showOCR = false
     @State private var showCSV = false
+    @State private var showBulkDeleteConfirmation = false
+    @State private var errorMessage: String?
 
     private var filteredProducts: [Product] {
-        searchText.isEmpty ? products : ProductSearch.ranked(products, query: searchText)
+        let categoryFiltered = products.filter { product in
+            switch categoryFilter {
+            case .all:
+                return true
+            case .uncategorized:
+                return product.categoryID == nil
+            case .category(let id):
+                return product.categoryID == id
+            }
+        }
+        return searchText.isEmpty
+            ? categoryFiltered
+            : ProductSearch.ranked(categoryFiltered, query: searchText)
     }
 
     var body: some View {
-        List {
+        List(selection: $selectedProductIDs) {
             ForEach(filteredProducts) { product in
-                Button { editingProduct = product } label: {
-                    HStack(spacing: 12) {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(categoryColor(for: product))
-                            .frame(width: 8, height: 42)
-                        VStack(alignment: .leading, spacing: 3) {
-                            HStack {
-                                Text(product.name).font(.headline)
-                                if product.menuType == .limited {
-                                    Text("期間限定").font(.caption2).padding(4)
-                                        .background(.orange.opacity(0.16), in: Capsule())
-                                }
-                                if product.isFrequent {
-                                    Image(systemName: "star.fill").foregroundStyle(.yellow)
-                                }
+                HStack(spacing: 12) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(categoryColor(for: product))
+                        .frame(width: 8, height: 42)
+                    VStack(alignment: .leading, spacing: 3) {
+                        HStack {
+                            Text(product.name).font(.headline)
+                            if product.menuType == .limited {
+                                Text("期間限定").font(.caption2).padding(4)
+                                    .background(.orange.opacity(0.16), in: Capsule())
                             }
-                            Text("\(product.price.yenText)・\(product.taxRate.label) \(product.taxType.label)・\(categoryName(for: product))")
-                                .font(.caption).foregroundStyle(.secondary)
+                            if product.isFrequent {
+                                Image(systemName: "star.fill").foregroundStyle(.yellow)
+                            }
                         }
-                        Spacer()
-                        if !product.isEnabled {
-                            Text("無効").foregroundStyle(.secondary)
-                        }
+                        Text("\(product.price.yenText)・\(product.taxRate.label) \(product.taxType.label)・\(categoryName(for: product))")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if !product.isEnabled {
+                        Text("無効").foregroundStyle(.secondary)
+                    }
+                    if editMode?.wrappedValue != .active {
                         Image(systemName: "chevron.right").foregroundStyle(.tertiary)
                     }
                 }
-                .buttonStyle(.plain)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    guard editMode?.wrappedValue != .active else { return }
+                    editingProduct = product
+                }
+                .tag(product.id)
                 .swipeActions {
                     Button("削除", role: .destructive) {
-                        modelContext.delete(product)
-                        try? modelContext.save()
+                        delete([product])
                     }
                 }
             }
@@ -62,19 +83,76 @@ struct ProductListView: View {
         .searchable(text: $searchText, prompt: "商品名・読み・意味で検索")
         .navigationTitle("商品マスタ")
         .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                Menu("読み込み", systemImage: "square.and.arrow.down") {
-                    Button("CSVから読み込む", systemImage: "tablecells") { showCSV = true }
-                    Button("OCRで読み込む", systemImage: "text.viewfinder") { showOCR = true }
+            ToolbarItem(placement: .topBarLeading) {
+                Menu {
+                    Picker("カテゴリ", selection: $categoryFilter) {
+                        Text("すべて（\(products.count)）").tag(ProductCategoryFilter.all)
+                        ForEach(categories) { category in
+                            Text("\(category.name)（\(productCount(in: category.id))）")
+                                .tag(ProductCategoryFilter.category(category.id))
+                        }
+                        Text("未分類（\(productCount(in: nil))）")
+                            .tag(ProductCategoryFilter.uncategorized)
+                    }
+                } label: {
+                    Label(categoryFilterLabel, systemImage: "line.3.horizontal.decrease.circle")
                 }
-                Button("追加", systemImage: "plus") { showNewProduct = true }
+            }
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                if editMode?.wrappedValue == .active {
+                    Button("削除", role: .destructive) {
+                        showBulkDeleteConfirmation = true
+                    }
+                    .disabled(selectedProductIDs.isEmpty)
+                } else {
+                    Menu("読み込み", systemImage: "square.and.arrow.down") {
+                        Button("CSVから読み込む", systemImage: "tablecells") { showCSV = true }
+                        Button("OCRで読み込む", systemImage: "text.viewfinder") { showOCR = true }
+                    }
+                    Button("追加", systemImage: "plus") { showNewProduct = true }
+                }
+                EditButton()
             }
         }
         .sheet(isPresented: $showNewProduct) { ProductFormView(product: nil) }
         .sheet(item: $editingProduct) { ProductFormView(product: $0) }
         .sheet(isPresented: $showOCR) { OCRImportView() }
         .sheet(isPresented: $showCSV) { CSVImportView() }
+        .confirmationDialog(
+            "選択した\(selectedProductIDs.count)件の商品を削除しますか？",
+            isPresented: $showBulkDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("\(selectedProductIDs.count)件を削除", role: .destructive) {
+                delete(products.filter { selectedProductIDs.contains($0.id) })
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("進行中の注文と会計履歴に保存済みの商品情報は残ります。")
+        }
+        .alert("操作を完了できませんでした", isPresented: .constant(errorMessage != nil)) {
+            Button("閉じる") { errorMessage = nil }
+        } message: {
+            Text(errorMessage ?? "")
+        }
+        .onChange(of: editMode?.wrappedValue) { _, mode in
+            if mode != .active { selectedProductIDs.removeAll() }
+        }
+        .onChange(of: categoryFilter) { _, _ in selectedProductIDs.removeAll() }
+        .onChange(of: searchText) { _, _ in selectedProductIDs.removeAll() }
         .task { await backfillMissingSearchIndexes() }
+    }
+
+    private var categoryFilterLabel: String {
+        switch categoryFilter {
+        case .all: return "すべて"
+        case .uncategorized: return "未分類"
+        case .category(let id): return categories.first { $0.id == id }?.name ?? "カテゴリ"
+        }
+    }
+
+    private func productCount(in categoryID: UUID?) -> Int {
+        products.count { $0.categoryID == categoryID }
     }
 
     private func categoryName(for product: Product) -> String {
@@ -83,6 +161,20 @@ struct ProductListView: View {
 
     private func categoryColor(for product: Product) -> Color {
         Color(hex: categories.first { $0.id == product.categoryID }?.colorHex ?? "64748B")
+    }
+
+    private func delete(_ productsToDelete: [Product]) {
+        productsToDelete.forEach(modelContext.delete)
+        do {
+            try modelContext.save()
+            selectedProductIDs.subtract(productsToDelete.map(\.id))
+            if selectedProductIDs.isEmpty {
+                editMode?.wrappedValue = .inactive
+            }
+        } catch {
+            modelContext.rollback()
+            errorMessage = error.localizedDescription
+        }
     }
 
     @MainActor
@@ -103,6 +195,12 @@ struct ProductListView: View {
         }
         try? modelContext.save()
     }
+}
+
+private enum ProductCategoryFilter: Hashable {
+    case all
+    case uncategorized
+    case category(UUID)
 }
 
 struct ProductFormView: View {
