@@ -21,16 +21,21 @@ Tables (home) | Products | History | Settings
 ```text
 Table tile
   -> order screen
-     -> frequent tiles grouped by category
-     -> search all enabled products
-     -> custom item sheet
+     -> ★ frequent / All / category / uncategorized tabs (default: All)
+     -> search all enabled products regardless of selected tab
+     -> always-visible custom-item action -> large keypad sheet
      -> line quantity edit/remove
      -> move/merge table sheet
-     -> checkout sheet
+     -> checkout sheet: manually confirm total item count
+        -> payment entry
         -> optional ten-yen round action
         -> payment method
-        -> cash tender/change when applicable
-        -> complete -> table home
+        -> in-app cash tender keypad/change when applicable
+        -> complete -> summary
+           -> digital receipt
+           -> physical receipt print/cut
+           -> cash drawer open
+           -> close -> table home
 ```
 
 ## Product flow
@@ -93,5 +98,6 @@ Settings
   -> table count
   -> tax rounding rule
   -> category management
+  -> mPOP discovery/selection and drawer test
   -> optional sample-data insertion
 ```

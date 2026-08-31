@@ -25,9 +25,10 @@ The first launch asks for the number of tables. Sample categories and products c
 - [SEARCH.md](SEARCH.md): Japanese normalization, ranking, fallback, and dictionary build details
 - [BACKUP_GUIDE.md](BACKUP_GUIDE.md): important-data backup and fresh-install restore
 - [DIGITAL_RECEIPT.md](DIGITAL_RECEIPT.md): QR receipt usage, privacy model, capacity, and PDF fallback
+- [STAR_PRINTER_GUIDE.md](STAR_PRINTER_GUIDE.md): Star mPOP discovery, receipt printing, cutting, and drawer setup
 
 ## Current scope
 
-The MVP supports table-based orders, moving/merging tables, product management, CSV menu import, category-based quick tiles, normalized and semantic search, custom items, tax calculation, payment recording, cash change, optional ten-yen rounding, sale history, cancellation, correction sales, and self-contained QR/PDF digital receipts. OCR imports menu candidates from the camera or photo library and leaves tax fields for confirmation.
+The MVP supports table-based orders, moving/merging tables, product management, CSV menu import, frequent/All/category product tabs, category-independent search, large keypad custom-item entry, required item-count confirmation, staged checkout, payment recording, cash change, optional ten-yen rounding, sale history, cancellation, correction sales, self-contained QR/PDF digital receipts, and Star mPOP receipt printing/cutting/drawer control. OCR imports menu candidates from the camera or photo library and leaves tax fields for confirmation.
 
-No network account, live cloud synchronization, printer, cash drawer, automatic backup, sold-out management, or split payment is included. A manual checksummed backup can be saved to Files/iCloud Drive and restored on a fresh installation.
+No network account, live cloud synchronization, automatic backup, sold-out management, or split payment is included. A manual checksummed backup can be saved to Files/iCloud Drive and restored on a fresh installation. Physical mPOP behavior still requires verification with the store's actual hardware and connection method.

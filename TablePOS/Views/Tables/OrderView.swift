@@ -75,7 +75,6 @@ struct OrderView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button("カスタム商品", systemImage: "plus.circle") { showCustomItem = true }
                     Button("テーブル移動", systemImage: "arrow.right.arrow.left") { showMove = true }
                         .disabled(items.isEmpty)
                 } label: {
@@ -120,6 +119,7 @@ struct OrderView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
+                    categoryButton(title: "頻出", systemImage: "star.fill", filter: .frequent, color: .yellow)
                     categoryButton(title: "すべて", filter: .all, color: .indigo)
                     ForEach(categories) { category in
                         categoryButton(
@@ -135,10 +135,20 @@ struct OrderView: View {
             }
 
             ScrollView {
-                if searchText.isEmpty {
-                    frequentProducts
+                if !searchText.isEmpty {
+                    productGrid(ProductSearch.ranked(enabledProducts, query: searchText), color: .indigo)
+                        .padding()
+                } else if categoryFilteredProducts.isEmpty {
+                    EmptyStateView(
+                        title: "商品がありません",
+                        message: categoryFilter == .frequent
+                            ? "商品マスタで頻出を有効にすると、ここへ表示されます。"
+                            : "このカテゴリに有効な商品はありません。",
+                        systemImage: categoryFilter == .frequent ? "star" : "line.3.horizontal.decrease.circle"
+                    )
+                    .padding(.top, 40)
                 } else {
-                    productGrid(ProductSearch.ranked(categoryFilteredProducts, query: searchText), color: selectedCategoryColor)
+                    productGrid(categoryFilteredProducts, color: selectedCategoryColor)
                         .padding()
                 }
             }
@@ -146,59 +156,14 @@ struct OrderView: View {
         .background(Color(.systemGroupedBackground))
     }
 
-    @ViewBuilder
-    private var frequentProducts: some View {
-        let frequent = products.filter { $0.isEnabled && $0.isFrequent }
-        if categoryFilter != .all {
-            if categoryFilteredProducts.isEmpty {
-                EmptyStateView(
-                    title: "商品がありません",
-                    message: "このカテゴリに有効な商品はありません。",
-                    systemImage: "line.3.horizontal.decrease.circle"
-                )
-                .padding(.top, 40)
-            } else {
-                productGrid(categoryFilteredProducts, color: selectedCategoryColor)
-                    .padding()
-            }
-        } else if frequent.isEmpty {
-            EmptyStateView(
-                title: "頻出商品がありません",
-                message: "商品画面で頻出を有効にすると、ここへ自動配置されます。",
-                systemImage: "square.grid.3x3"
-            )
-            .padding(.top, 40)
-        } else {
-            LazyVStack(alignment: .leading, spacing: 22) {
-                ForEach(categories) { category in
-                    let categoryProducts = frequent.filter { $0.categoryID == category.id }
-                    if !categoryProducts.isEmpty {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Label(category.name, systemImage: "circle.fill")
-                                .font(.headline)
-                                .foregroundStyle(Color(hex: category.colorHex))
-                            productGrid(categoryProducts, color: Color(hex: category.colorHex))
-                        }
-                    }
-                }
-                let uncategorized = frequent.filter { product in
-                    !categories.contains { $0.id == product.categoryID }
-                }
-                if !uncategorized.isEmpty {
-                    VStack(alignment: .leading) {
-                        Text("未分類").font(.headline)
-                        productGrid(uncategorized)
-                    }
-                }
-            }
-            .padding()
-        }
-    }
+    private var enabledProducts: [Product] { products.filter(\.isEnabled) }
 
     private var categoryFilteredProducts: [Product] {
         products.filter { product in
             guard product.isEnabled else { return false }
             switch categoryFilter {
+            case .frequent:
+                return product.isFrequent
             case .all:
                 return true
             case .category(let id):
@@ -211,6 +176,7 @@ struct OrderView: View {
 
     private var selectedCategoryColor: Color {
         switch categoryFilter {
+        case .frequent: return .yellow
         case .all: return .indigo
         case .uncategorized: return .gray
         case .category(let id):
@@ -218,11 +184,19 @@ struct OrderView: View {
         }
     }
 
-    private func categoryButton(title: String, filter: OrderCategoryFilter, color: Color) -> some View {
+    private func categoryButton(
+        title: String,
+        systemImage: String? = nil,
+        filter: OrderCategoryFilter,
+        color: Color
+    ) -> some View {
         Button {
             categoryFilter = filter
         } label: {
-            Text(title)
+            HStack(spacing: 5) {
+                if let systemImage { Image(systemName: systemImage) }
+                Text(title)
+            }
                 .font(.subheadline.weight(categoryFilter == filter ? .bold : .medium))
                 .foregroundStyle(categoryFilter == filter ? .white : .primary)
                 .padding(.horizontal, 14)
@@ -272,6 +246,22 @@ struct OrderView: View {
             .padding()
             Divider()
 
+            Button {
+                showCustomItem = true
+            } label: {
+                VStack(spacing: 5) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 31, weight: .semibold))
+                    Text("カスタム商品を追加")
+                        .font(.subheadline.bold())
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.blue)
+            Divider()
+
             if items.isEmpty {
                 EmptyStateView(title: "注文は空です", message: "左の商品タイルをタップしてください。", systemImage: "cart")
             } else {
@@ -302,6 +292,7 @@ struct OrderView: View {
 }
 
 private enum OrderCategoryFilter: Hashable {
+    case frequent
     case all
     case category(UUID)
     case uncategorized

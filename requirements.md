@@ -36,8 +36,12 @@ Provide a fast, low-maintenance iPad register for one restaurant operating one d
 - Frequent products appear automatically as quick tiles grouped by category and colored with the category color.
 - The ordering screen provides category chips. Selecting a category shows every enabled product in that category and constrains text search to that category.
 - Repeated taps on the same product tile increase the quantity of the existing matching line.
+- Ordering category tabs start with a star-marked frequent tab, followed by All, every configured category, and uncategorized. All is selected by default and shows every enabled product; each category shows every enabled product in it.
+- While a search query is present, search covers every enabled product regardless of the selected category tab.
 - The order supports direct quantity entry and line removal.
 - A custom item may have a blank name. Price, tax rate, tax type, and quantity are required.
+- Custom item entry is an always-visible action in the order pane. Its large sheet uses an in-app numeric keypad, large price display, tax buttons, and plus/minus quantity controls without opening the system numeric keyboard.
+- All limited-time products can be deleted from the product master in one confirmed operation without changing active-order or historical snapshots.
 
 ## 5. CSV menu import
 
@@ -91,6 +95,9 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 - Cash checkout accepts tendered amount and calculates change. Underpayment cannot complete.
 - Non-cash checkout records the payment method and total.
 - Checkout saves an immutable item snapshot and calculated tax/total fields before clearing the table.
+- Checkout is split into count confirmation, payment entry, and completion summary. The user must manually enter the actual total item quantity and it must match the order before payment entry is enabled.
+- The payment step presents a large total, payment method, and an in-app cash keypad. Completion is a separate top-right action.
+- The completion summary provides digital-receipt and physical-receipt actions.
 
 ## 10. History, cancellation, and correction
 
@@ -114,7 +121,6 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 ## 12. Explicitly out of MVP scope
 
 - Multi-device sync, cloud sync, accounts, roles, and multi-store support
-- Receipt printers and cash drawers
 - Automated/scheduled backup and multi-device synchronization
 - Inventory and sold-out management
 - Split bills and split payments
@@ -135,3 +141,14 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 10. Product master records can be filtered by category, edited after CSV import, and deleted using multi-selection.
 11. Settings can export a checksummed backup of all business records, and a fresh installation can validate and restore it before initial setup.
 12. A sale detail can show a self-contained digital-receipt QR when it fits the practical capacity and can always export the receipt as PDF.
+13. Checkout cannot proceed to payment until the manually entered item count matches the stored order quantity.
+14. A selected Star mPOP printer can print and partially cut a snapshot receipt, and cash checkout can open the drawer.
+
+## 14. Star mPOP printer
+
+- Integrate the official StarXpand SDK for iOS through Swift Package Manager with an exact version.
+- Discover supported Star printers over LAN, Bluetooth, Bluetooth Low Energy, and USB without filtering for one mPOP model identifier.
+- Persist the selected connection locally on the device.
+- Support Japanese receipt text, print, paper feed, partial cut, and cash-drawer open commands.
+- POP10, POP10CI, and POP10CBI must use the same discovery/selection path rather than model-specific branches.
+- Printer failure must not roll back or delete a completed sale. The completion summary remains available and shows the error.

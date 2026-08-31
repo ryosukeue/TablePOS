@@ -15,6 +15,7 @@ struct ProductListView: View {
     @State private var showOCR = false
     @State private var showCSV = false
     @State private var showBulkDeleteConfirmation = false
+    @State private var showLimitedDeleteConfirmation = false
     @State private var errorMessage: String?
 
     private var filteredProducts: [Product] {
@@ -125,6 +126,12 @@ struct ProductListView: View {
                     }
                     Button("追加", systemImage: "plus") { showNewProduct = true }
                     Button("選択") { isSelecting = true }
+                    Menu("商品操作", systemImage: "ellipsis.circle") {
+                        Button("期間限定商品を一括削除", systemImage: "calendar.badge.minus", role: .destructive) {
+                            showLimitedDeleteConfirmation = true
+                        }
+                        .disabled(limitedProducts.isEmpty)
+                    }
                 }
             }
         }
@@ -144,6 +151,18 @@ struct ProductListView: View {
         } message: {
             Text("進行中の注文と会計履歴に保存済みの商品情報は残ります。")
         }
+        .confirmationDialog(
+            "期間限定商品\(limitedProducts.count)件をすべて削除しますか？",
+            isPresented: $showLimitedDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("\(limitedProducts.count)件を一括削除", role: .destructive) {
+                delete(limitedProducts)
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("商品マスタから期間限定メニューだけを削除します。進行中の注文と会計履歴のスナップショットは残ります。")
+        }
         .alert("操作を完了できませんでした", isPresented: .constant(errorMessage != nil)) {
             Button("閉じる") { errorMessage = nil }
         } message: {
@@ -160,6 +179,10 @@ struct ProductListView: View {
         case .uncategorized: return "未分類"
         case .category(let id): return categories.first { $0.id == id }?.name ?? "カテゴリ"
         }
+    }
+
+    private var limitedProducts: [Product] {
+        products.filter { $0.menuType == .limited }
     }
 
     private func productCount(in categoryID: UUID?) -> Int {

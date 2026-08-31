@@ -66,6 +66,16 @@ Restore is accepted only before initial setup. The service verifies format versi
 
 QR generation applies a conservative 1,800-byte URL ceiling because theoretical QR capacity is not a useful guarantee for phone-camera scanning. Oversized receipts keep the full native PDF export path. The QR is not a live server record: already-issued receipts do not update after cancellation or correction.
 
+### Checkout verification boundary
+
+Checkout separates human item-count verification from payment entry. The operator must enter the total physical item count using the in-app keypad; the payment step is unavailable until it equals the sum of persisted `OrderItem.quantity` values. The actual financial calculation still uses the stored lines, and `OrderService.checkout` remains the transaction boundary that creates the sale snapshots and clears the order.
+
+### Star printer boundary
+
+`StarPrinterService` is the only layer that imports `StarIO10`. It discovers every SDK-supported printer over LAN, Bluetooth, Bluetooth LE, and USB and persists only the selected interface/identifier in device-local `UserDefaults`. Business models do not depend on a printer model, so POP10, POP10CI, and POP10CBI share the same path.
+
+Physical receipt commands are generated from immutable `Sale`/`SaleItem` snapshots after checkout. A printer connection, paper, or drawer error is reported to the completion UI and never reverses the completed sale. Cash checkout attempts drawer opening when a printer is configured; receipt printing, partial cut, and manual drawer opening remain separately retryable.
+
 ## Error handling
 
 The MVP shows local validation and operation errors through alerts. Save failures do not silently dismiss an editing or checkout sheet. A production release should add structured logging, store migration tests, and recovery UX.

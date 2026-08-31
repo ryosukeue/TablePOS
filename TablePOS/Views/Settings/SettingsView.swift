@@ -52,6 +52,14 @@ struct SettingsView: View {
                 }
             }
 
+            Section("周辺機器") {
+                NavigationLink {
+                    PrinterSettingsView()
+                } label: {
+                    Label("mPOPプリンタとドロア", systemImage: "printer")
+                }
+            }
+
             Section {
                 Button("サンプル商品を追加") { addSamples() }
                     .disabled(!products.isEmpty)
@@ -66,7 +74,7 @@ struct SettingsView: View {
                 LabeledContent("バックアップ", value: "手動でファイル保存")
                 LabeledContent("対象", value: "1店舗・1台")
                 LabeledContent("対応", value: "iOS / iPadOS 17以降")
-                Text("自動同期、プリンタ、キャッシュドロア、自動バックアップ、売切れ、割り勘はMVP対象外です。")
+                Text("自動同期、自動バックアップ、売切れ、割り勘はMVP対象外です。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

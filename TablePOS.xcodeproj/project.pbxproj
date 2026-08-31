@@ -6,13 +6,43 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A00000000000000000000013 /* StarIO10 in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000014 /* StarIO10 */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A00000000000000000000018 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		A00000000000000000000001 /* TablePOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TablePOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A00000000000000000000016 /* Exceptions for "TablePOS" folder in "TablePOS" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A00000000000000000000006 /* TablePOS */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A00000000000000000000002 /* TablePOS */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A00000000000000000000016 /* Exceptions for "TablePOS" folder in "TablePOS" target */,
+			);
 			path = TablePOS;
 			sourceTree = "<group>";
 		};
@@ -23,6 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A00000000000000000000013 /* StarIO10 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,6 +86,7 @@
 				A00000000000000000000012 /* Fetch SudachiDict core */,
 				A00000000000000000000008 /* Sources */,
 				A00000000000000000000003 /* Frameworks */,
+				A00000000000000000000018 /* Embed Frameworks */,
 				A00000000000000000000009 /* Resources */,
 			);
 			buildRules = (
@@ -66,6 +98,7 @@
 			);
 			name = TablePOS;
 			packageProductDependencies = (
+				A00000000000000000000014 /* StarIO10 */,
 			);
 			productName = TablePOS;
 			productReference = A00000000000000000000001 /* TablePOS.app */;
@@ -95,6 +128,9 @@
 			);
 			mainGroup = A00000000000000000000004;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A00000000000000000000015 /* XCRemoteSwiftPackageReference "StarXpand-SDK-iOS" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A00000000000000000000005 /* Products */;
 			projectDirPath = "";
@@ -270,14 +306,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Z5MCP6ZQJ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "メニューを撮影して商品候補を読み取るためにカメラを使用します。";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TablePOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ryosukeue.TablePOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -297,14 +329,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Z5MCP6ZQJ6;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "メニューを撮影して商品候補を読み取るためにカメラを使用します。";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TablePOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ryosukeue.TablePOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -339,6 +367,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A00000000000000000000015 /* XCRemoteSwiftPackageReference "StarXpand-SDK-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/star-micronics/StarXpand-SDK-iOS";
+			requirement = {
+				kind = exactVersion;
+				version = 2.13.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A00000000000000000000014 /* StarIO10 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000015 /* XCRemoteSwiftPackageReference "StarXpand-SDK-iOS" */;
+			productName = StarIO10;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A0000000000000000000000A /* Project object */;
 }

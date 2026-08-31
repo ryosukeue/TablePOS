@@ -9,6 +9,7 @@ TablePOSは、飲食店の1店舗・1端末運用を想定したローカル完�
 - OCR: Vision
 - 日本語検索: Sudachi.rs + SudachiDict core
 - 意味検索: Natural Languageの`NLEmbedding`
+- 物理レシート: StarXpand SDK (`StarIO10` 2.13.0)
 - 対応OS: iOS / iPadOS 17以降
 - データ同期: なし。会計データを含めて端末内へ保存
 
@@ -54,6 +55,7 @@ TablePOS/
 │   ├── MenuCSVProductService.swift # CSV商品・カテゴリの一括保存
 │   ├── BackupService.swift       # 重要データの書出し、検証、初期復元
 │   ├── DigitalReceiptService.swift # 会計スナップショットのQR・PDF生成
+│   ├── StarPrinterService.swift # mPOP探索、印刷、カット、ドロア開放
 │   └── Formatting.swift         # 円表示、色などの共通処理
 │
 ├── Views/
@@ -71,9 +73,11 @@ TablePOS/
 │   │   └── DigitalReceiptView.swift # QR表示とPDF共有
 │   ├── Settings/
 │   │   ├── SettingsView.swift   # 卓数、税丸め、カテゴリ設定
-│   │   └── BackupRestoreView.swift # Files/iCloud Driveへの手動バックアップ
+│   │   ├── BackupRestoreView.swift # Files/iCloud Driveへの手動バックアップ
+│   │   └── PrinterSettingsView.swift # mPOPの探索・選択・ドロアテスト
 │   └── Components/
-│       └── StatusViews.swift    # 空表示、金額内訳など
+│       ├── StatusViews.swift    # 空表示、金額内訳など
+│       └── NumericKeypad.swift  # 価格、点数、預かり金のアプリ内テンキー
 │
 ├── Frameworks/
 │   └── TablePOSSudachi.xcframework # 実機・Simulator用のRust静的ライブラリ
@@ -146,9 +150,11 @@ SwiftDataのオブジェクトリレーションではなくUUIDを保存し、S
   → 同じ商品は数量を加算
   → 必要なら別テーブルへ移動または合算
   → 税額と合計を計算
+  → 実際の商品合計点数を手入力して注文と照合
   → 任意で10円単位へ丸める
   → 現金 / カード / QR / その他で会計
   → SaleとSaleItemを保存
+  → 完了サマリーからデジタルレシートまたはmPOP物理レシート
   → OrderとOrderItemを削除して空卓へ戻す
 ```
 
@@ -246,6 +252,7 @@ OCRは税率や内税・外税を自動判断しません。保存前の確認�
 | 商品管理を変える | `Views/Products/` |
 | 会計履歴を変える | `Views/History/` |
 | デジタルレシートを変える | `Services/DigitalReceiptService.swift`、`Views/History/DigitalReceiptView.swift`、`docs/receipt/` |
+| mPOP印刷を変える | `Services/StarPrinterService.swift`と`Views/Settings/PrinterSettingsView.swift` |
 | 設定画面を変える | `Views/Settings/` |
 
 ## 13. 関連文書
@@ -259,4 +266,5 @@ OCRは税率や内税・外税を自動判断しません。保存前の確認�
 - [CSV_IMPORT_REQUIREMENTS.md](CSV_IMPORT_REQUIREMENTS.md): CSV取込の機能要件と受入条件
 - [BACKUP_GUIDE.md](BACKUP_GUIDE.md): 手動バックアップと初期復元の操作・対象・制約
 - [DIGITAL_RECEIPT.md](DIGITAL_RECEIPT.md): QRレシートの利用方法、データ、プライバシー、容量制約
+- [STAR_PRINTER_GUIDE.md](STAR_PRINTER_GUIDE.md): mPOPの設定、印刷・カット・ドロア動作、実機確認事項
 - [TODO.md](TODO.md): 実装済み・未実装一覧

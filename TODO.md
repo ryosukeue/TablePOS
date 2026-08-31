@@ -26,6 +26,11 @@
 - [x] Cancellation record and linked replacement correction sale
 - [x] Manual checksummed backup export to Files/iCloud Drive and fresh-install restore
 - [x] Self-contained digital-receipt QR, privacy-preserving static viewer, and native PDF fallback
+- [x] Frequent/All/category ordering tabs with category-independent search
+- [x] Large custom-item sheet with in-app numeric keypad
+- [x] Required item-count confirmation and staged checkout completion summary
+- [x] Limited-time product one-action bulk deletion
+- [x] StarXpand mPOP discovery, Japanese receipt print, partial cut, and cash-drawer commands
 
 ## Deliberately simplified for the first build
 
@@ -33,6 +38,7 @@
 - [ ] Large-menu performance profiling and cached semantic vectors
 - [ ] OCR row/column layout reconstruction beyond line-based name/price parsing
 - [ ] Production accessibility/localization review
+- [ ] Physical verification with the store's actual mPOP connection, paper width, and drawer
 - [ ] Store migration and corrupt-store recovery UX
 - [ ] Evaluate SudachiDict small/custom dictionary if the 207 MB core dictionary is too large for distribution
 
@@ -40,7 +46,6 @@
 
 - [ ] CSV export UI
 - [ ] Multi-device/cloud sync and accounts
-- [ ] Printer/cash drawer integration
 - [ ] Automatic/versioned CloudKit backup and existing-store merge
 - [ ] Inventory and sold-out state
 - [ ] Split bills/payments
