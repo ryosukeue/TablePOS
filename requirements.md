@@ -34,13 +34,13 @@ Provide a fast, low-maintenance iPad register for one restaurant operating one d
 - Each product has name, integer price, tax rate (8% or 10%), tax type (tax included or tax excluded), menu type, category, frequent flag, and enabled flag.
 - Categories have name, color, and sort order.
 - Frequent products appear automatically as quick tiles grouped by category and colored with the category color.
-- The ordering screen provides category chips. Selecting a category shows every enabled product in that category and constrains text search to that category.
+- The ordering screen provides category chips. Selecting a category shows every enabled product in that category; text search always searches all enabled products.
 - Repeated taps on the same product tile increase the quantity of the existing matching line.
-- Ordering category tabs start with a star-marked frequent tab, followed by All, every configured category, and uncategorized. All is selected by default and shows every enabled product; each category shows every enabled product in it.
+- Ordering category tabs start with a star-marked frequent tab, followed by All, every configured category, and uncategorized. All is selected by default. Frequent and All keep category headings and cluster their products by category; a category tab shows every enabled product in that category.
 - While a search query is present, search covers every enabled product regardless of the selected category tab.
 - The order supports direct quantity entry and line removal.
 - A custom item may have a blank name. Price, tax rate, tax type, and quantity are required.
-- Custom item entry is an always-visible action in the order pane. Its large sheet uses an in-app numeric keypad, large price display, tax buttons, and plus/minus quantity controls without opening the system numeric keyboard.
+- Custom item entry is an always-visible action in the order pane. On iPad its page-size sheet places tax choices and the in-app price keypad on the left, and quantity controls, optional name, large price, and total on the right. The wide layout does not require scrolling or open the system numeric keyboard.
 - All limited-time products can be deleted from the product master in one confirmed operation without changing active-order or historical snapshots.
 
 ## 5. CSV menu import
@@ -55,6 +55,8 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 - Files are limited to 5MB and 10,000 data rows.
 - Before saving, the UI shows valid-row counts, a product preview, validation errors, and original line numbers. Invalid rows are excluded while valid rows remain importable.
 - Every parsed CSV row, including an invalid row, remains editable in the pre-import preview. Editing triggers validation again so minor errors can be corrected without changing and reselecting the source file.
+- Preview rows support multiple selection. The selected rows can be changed together between grand/limited menu and tax-included/tax-excluded before import.
+- The row editor uses pickers for tax and menu metadata and switches for frequent/enabled flags; it does not require typing boolean or enum values.
 - Duplicate names within one CSV are rejected after the first valid row.
 - For a name matching an existing product after trimming and Unicode compatibility normalization, the user chooses either update or skip. Import never deletes products absent from the file.
 - An unknown non-empty category is created automatically with an assigned color. An empty category remains uncategorized.
@@ -96,7 +98,8 @@ The detailed Japanese specification and acceptance criteria are defined in [CSV_
 - Non-cash checkout records the payment method and total.
 - Checkout saves an immutable item snapshot and calculated tax/total fields before clearing the table.
 - Checkout is split into count confirmation, payment entry, and completion summary. The user must manually enter the actual total item quantity and it must match the order before payment entry is enabled.
-- The payment step presents a large total, payment method, and an in-app cash keypad. Completion is a separate top-right action.
+- On iPad, count confirmation is a page-size two-column sheet with order lines on the left and the keypad on the right. Only the order-line list scrolls, and only when it exceeds the available height.
+- The payment step uses the same page-size two-column approach: amount and tax summary on the left, payment method and in-app cash keypad on the right. Completion is a separate top-right action.
 - The completion summary provides digital-receipt and physical-receipt actions.
 
 ## 10. History, cancellation, and correction

@@ -21,18 +21,18 @@ struct CustomItemSheet: View {
                 let wide = proxy.size.width >= 700
                 Group {
                     if wide {
-                        HStack(alignment: .top, spacing: 32) {
-                            customItemSummary
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                        HStack(spacing: 32) {
+                            customTaxAndKeypad
+                                .frame(width: min(430, proxy.size.width * 0.45))
                             Divider()
-                            customItemInput
-                                .frame(width: min(430, proxy.size.width * 0.46))
+                            customItemDetails
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                         }
                     } else {
                         ScrollView {
                             VStack(spacing: 24) {
-                                customItemInput
-                                customItemSummary
+                                customItemDetails
+                                customTaxAndKeypad
                             }
                         }
                     }
@@ -66,34 +66,20 @@ struct CustomItemSheet: View {
                 Button("閉じる") { errorMessage = nil }
             } message: { Text(errorMessage ?? "") }
         }
-        .presentationDetents([.large])
+        .posPagePresentation()
     }
 
-    private var customItemInput: some View {
+    private var customTaxAndKeypad: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("商品名（空欄可）")
-                .font(.headline)
-            TextField("例：本日のおすすめ", text: $name)
-                .font(.title2)
-                .textFieldStyle(.roundedBorder)
+            Text("税と価格を入力")
+                .font(.title2.bold())
 
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("価格")
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Text(price.yenText)
-                    .font(.system(size: 52, weight: .bold, design: .rounded))
-                    .contentTransition(.numericText())
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .minimumScaleFactor(0.65)
-            }
-
-            HStack(spacing: 12) {
+            VStack(spacing: 12) {
                 Picker("税率", selection: $taxRate) {
                     ForEach(TaxRate.allCases) { Text($0.label).tag($0) }
                 }
                 .pickerStyle(.segmented)
+
                 Picker("税区分", selection: $taxType) {
                     ForEach(TaxType.allCases) { Text($0.label).tag($0) }
                 }
@@ -104,35 +90,51 @@ struct CustomItemSheet: View {
         }
     }
 
-    private var customItemSummary: some View {
+    private var customItemDetails: some View {
         VStack(alignment: .leading, spacing: 24) {
-            Text("注文へ追加する内容")
+            Text("商品情報")
                 .font(.title2.bold())
-            VStack(alignment: .leading, spacing: 10) {
-                Text(name.trimmingCharacters(in: .whitespacesAndNewlines).nonEmptyOrPlaceholder)
-                    .font(.title.bold())
-                Text("\(taxRate.label)・\(taxType.label)")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                Text((price * quantity).yenText)
-                    .font(.system(size: 46, weight: .bold, design: .rounded))
-            }
-            Spacer(minLength: 16)
+
             VStack(alignment: .leading, spacing: 12) {
                 Text("数量")
                     .font(.headline)
                 HStack(spacing: 24) {
                     Button { quantity = max(1, quantity - 1) } label: {
-                        Image(systemName: "minus.circle.fill").font(.system(size: 46))
+                        Image(systemName: "minus.circle.fill").font(.system(size: 50))
                     }
                     Text("\(quantity)")
-                        .font(.system(size: 46, weight: .bold, design: .rounded))
-                        .frame(minWidth: 80)
+                        .font(.system(size: 50, weight: .bold, design: .rounded))
+                        .frame(minWidth: 86)
                     Button { quantity = min(999, quantity + 1) } label: {
-                        Image(systemName: "plus.circle.fill").font(.system(size: 46))
+                        Image(systemName: "plus.circle.fill").font(.system(size: 50))
                     }
                 }
                 .buttonStyle(.plain)
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text("商品名（空欄可）")
+                    .font(.headline)
+                TextField("例：本日のおすすめ", text: $name)
+                    .font(.title2)
+                    .textFieldStyle(.roundedBorder)
+            }
+
+            Spacer(minLength: 8)
+
+            VStack(alignment: .trailing, spacing: 6) {
+                Text("価格")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(price.yenText)
+                    .font(.system(size: 68, weight: .bold, design: .rounded))
+                    .contentTransition(.numericText())
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .minimumScaleFactor(0.55)
+                Text("\(taxRate.label)・\(taxType.label)　合計 \((price * quantity).yenText)")
+                    .font(.title3.bold())
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -287,7 +289,7 @@ struct CheckoutView: View {
                 }
             }
         }
-        .presentationDetents([.large])
+        .posPagePresentation()
         .interactiveDismissDisabled(step == .completed)
     }
 
@@ -594,4 +596,15 @@ private enum CheckoutStep {
     case confirmCount
     case payment
     case completed
+}
+
+private extension View {
+    @ViewBuilder
+    func posPagePresentation() -> some View {
+        if #available(iOS 18.0, *) {
+            presentationSizing(.page)
+        } else {
+            presentationDetents([.large])
+        }
+    }
 }

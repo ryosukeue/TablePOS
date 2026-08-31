@@ -147,6 +147,9 @@ struct OrderView: View {
                         systemImage: categoryFilter == .frequent ? "star" : "line.3.horizontal.decrease.circle"
                     )
                     .padding(.top, 40)
+                } else if categoryFilter == .all || categoryFilter == .frequent {
+                    groupedProductSections(categoryFilteredProducts)
+                        .padding()
                 } else {
                     productGrid(categoryFilteredProducts, color: selectedCategoryColor)
                         .padding()
@@ -233,6 +236,44 @@ struct OrderView: View {
                 }
                 .buttonStyle(.plain)
             }
+        }
+    }
+
+    private func groupedProductSections(_ source: [Product]) -> some View {
+        LazyVStack(alignment: .leading, spacing: 26) {
+            ForEach(categories) { category in
+                let categoryProducts = source.filter { $0.categoryID == category.id }
+                if !categoryProducts.isEmpty {
+                    productSection(
+                        title: category.name,
+                        products: categoryProducts,
+                        color: Color(hex: category.colorHex)
+                    )
+                }
+            }
+
+            let uncategorizedProducts = source.filter { product in
+                product.categoryID == nil || !categories.contains { $0.id == product.categoryID }
+            }
+            if !uncategorizedProducts.isEmpty {
+                productSection(title: "未分類", products: uncategorizedProducts, color: .gray)
+            }
+        }
+    }
+
+    private func productSection(title: String, products: [Product], color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 11) {
+            HStack(spacing: 8) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(color)
+                    .frame(width: 6, height: 24)
+                Text(title)
+                    .font(.title3.bold())
+                Text("\(products.count)件")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            productGrid(products, color: color)
         }
     }
 

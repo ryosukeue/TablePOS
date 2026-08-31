@@ -14,6 +14,7 @@ struct CSVImportView: View {
     @State private var errorMessage: String?
     @State private var successMessage: String?
     @State private var editingDraft: MenuCSVRowDraft?
+    @State private var selectedLineNumbers = Set<Int>()
 
     var body: some View {
         NavigationStack {
@@ -51,35 +52,94 @@ struct CSVImportView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    Section("取込前の確認・修正") {
-                        ForEach(result.drafts) { draft in
-                            Button {
-                                editingDraft = draft
-                            } label: {
-                                HStack(spacing: 12) {
-                                    Image(systemName: issueMessages(for: draft.lineNumber).isEmpty
-                                          ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                                        .foregroundStyle(issueMessages(for: draft.lineNumber).isEmpty ? .green : .red)
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        HStack {
-                                            Text(draft.name.trimmingCharacters(in: .whitespacesAndNewlines).nonEmptyOrPlaceholder)
-                                                .font(.headline)
-                                            Spacer()
-                                            Text(draft.price.isEmpty ? "価格なし" : draft.price)
-                                        }
-                                        Text("\(draft.lineNumber)行目・\(draft.categoryName.isEmpty ? "未分類" : draft.categoryName)")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        if let issue = issueMessages(for: draft.lineNumber).first {
-                                            Text(issue)
-                                                .font(.caption)
-                                                .foregroundStyle(.red)
-                                        }
-                                    }
-                                    Image(systemName: "chevron.right").foregroundStyle(.tertiary)
+                    Section("選択した商品の一括変更") {
+                        HStack {
+                            Text("\(selectedLineNumbers.count)件を選択中")
+                                .foregroundStyle(selectedLineNumbers.isEmpty ? .secondary : .primary)
+                            Spacer()
+                            Button(selectedLineNumbers.count == result.drafts.count ? "選択解除" : "すべて選択") {
+                                if selectedLineNumbers.count == result.drafts.count {
+                                    selectedLineNumbers.removeAll()
+                                } else {
+                                    selectedLineNumbers = Set(result.drafts.map(\.lineNumber))
                                 }
                             }
-                            .buttonStyle(.plain)
+                        }
+
+                        HStack {
+                            Menu {
+                                ForEach(MenuType.allCases) { menuType in
+                                    Button(menuType.label) {
+                                        updateSelectedDrafts(menuType: menuType)
+                                    }
+                                }
+                            } label: {
+                                Label("メニュー区分", systemImage: "fork.knife")
+                            }
+                            .disabled(selectedLineNumbers.isEmpty)
+
+                            Spacer()
+
+                            Menu {
+                                ForEach(TaxType.allCases) { taxType in
+                                    Button(taxType.label) {
+                                        updateSelectedDrafts(taxType: taxType)
+                                    }
+                                }
+                            } label: {
+                                Label("内税・外税", systemImage: "percent")
+                            }
+                            .disabled(selectedLineNumbers.isEmpty)
+                        }
+
+                        Text("下の丸で商品を複数選び、グランド／期間限定または内税／外税をまとめて変更できます。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Section("取込前の確認・修正") {
+                        ForEach(result.drafts) { draft in
+                            HStack(spacing: 12) {
+                                Button {
+                                    toggleSelection(of: draft)
+                                } label: {
+                                    Image(systemName: selectedLineNumbers.contains(draft.lineNumber)
+                                          ? "checkmark.circle.fill" : "circle")
+                                        .font(.title2)
+                                        .foregroundStyle(selectedLineNumbers.contains(draft.lineNumber) ? .blue : .secondary)
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel(selectedLineNumbers.contains(draft.lineNumber) ? "選択を解除" : "選択")
+
+                                Button {
+                                    editingDraft = draft
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        Image(systemName: issueMessages(for: draft.lineNumber).isEmpty
+                                              ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                                            .foregroundStyle(issueMessages(for: draft.lineNumber).isEmpty ? .green : .red)
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            HStack {
+                                                Text(draft.name.trimmingCharacters(in: .whitespacesAndNewlines).nonEmptyOrPlaceholder)
+                                                    .font(.headline)
+                                                Spacer()
+                                                Text(draft.price.isEmpty ? "価格なし" : draft.price)
+                                            }
+                                            Text("\(draft.lineNumber)行目・\(draft.categoryName.isEmpty ? "未分類" : draft.categoryName)")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                            if let issue = issueMessages(for: draft.lineNumber).first {
+                                                Text(issue)
+                                                    .font(.caption)
+                                                    .foregroundStyle(.red)
+                                            }
+                                        }
+                                        Image(systemName: "chevron.right").foregroundStyle(.tertiary)
+                                    }
+                                    .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                         Text("商品をタップすると、CSVを選び直さずに内容を修正できます。修正後は自動で再チェックします。")
                             .font(.caption)
@@ -185,6 +245,26 @@ struct CSVImportView: View {
         self.result = MenuCSVImportService.validate(drafts: drafts, fileName: result.fileName)
     }
 
+    private func toggleSelection(of draft: MenuCSVRowDraft) {
+        if selectedLineNumbers.contains(draft.lineNumber) {
+            selectedLineNumbers.remove(draft.lineNumber)
+        } else {
+            selectedLineNumbers.insert(draft.lineNumber)
+        }
+    }
+
+    private func updateSelectedDrafts(menuType: MenuType? = nil, taxType: TaxType? = nil) {
+        guard let result else { return }
+        let drafts = result.drafts.map { draft in
+            guard selectedLineNumbers.contains(draft.lineNumber) else { return draft }
+            var updated = draft
+            if let menuType { updated.menuType = menuType.rawValue }
+            if let taxType { updated.taxType = taxType.rawValue }
+            return updated
+        }
+        self.result = MenuCSVImportService.validate(drafts: drafts, fileName: result.fileName)
+    }
+
     private var errorBinding: Binding<Bool> {
         Binding(
             get: { errorMessage != nil },
@@ -209,6 +289,7 @@ struct CSVImportView: View {
                     try MenuCSVImportService.load(url: url)
                 }.value
                 result = parsed
+                selectedLineNumbers.removeAll()
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -268,17 +349,19 @@ private struct CSVRowEditorView: View {
                     TextField("カテゴリ（空欄は未分類）", text: $draft.categoryName)
                 }
                 Section("税・メニュー") {
-                    TextField("税率（8 または 10）", text: $draft.taxRate)
-                        .keyboardType(.numberPad)
-                    TextField("税区分（内税 または 外税）", text: $draft.taxType)
-                    TextField("メニュー区分（グランド または 期間限定）", text: $draft.menuType)
+                    Picker("税率", selection: taxRateSelection) {
+                        ForEach(TaxRate.allCases) { Text($0.label).tag($0) }
+                    }
+                    Picker("税区分", selection: taxTypeSelection) {
+                        ForEach(TaxType.allCases) { Text($0.label).tag($0) }
+                    }
+                    Picker("メニュー区分", selection: menuTypeSelection) {
+                        ForEach(MenuType.allCases) { Text($0.label).tag($0) }
+                    }
                 }
                 Section("表示") {
-                    TextField("頻出（はい または いいえ）", text: $draft.isFrequent)
-                    TextField("有効（はい または いいえ）", text: $draft.isEnabled)
-                    Text("空欄の場合、頻出はOFF、有効はONになります。")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Toggle("頻出タイルに表示", isOn: frequentSelection)
+                    Toggle("商品を有効にする", isOn: enabledSelection)
                 }
             }
             .navigationTitle("\(draft.lineNumber)行目を修正")
@@ -289,11 +372,68 @@ private struct CSVRowEditorView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("反映") {
+                        normalizeSelections()
                         onSave(draft)
                         dismiss()
                     }
                 }
             }
         }
+    }
+
+    private var taxRateSelection: Binding<TaxRate> {
+        Binding(
+            get: { draft.taxRate.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("8") ? .reduced : .standard },
+            set: { draft.taxRate = String($0.rawValue) }
+        )
+    }
+
+    private var taxTypeSelection: Binding<TaxType> {
+        Binding(
+            get: {
+                let value = draft.taxType.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                return value == TaxType.excluded.rawValue || value == "外税" ? .excluded : .included
+            },
+            set: { draft.taxType = $0.rawValue }
+        )
+    }
+
+    private var menuTypeSelection: Binding<MenuType> {
+        Binding(
+            get: {
+                let value = draft.menuType.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                return value == MenuType.limited.rawValue || value == "期間限定" ? .limited : .grand
+            },
+            set: { draft.menuType = $0.rawValue }
+        )
+    }
+
+    private var frequentSelection: Binding<Bool> {
+        Binding(
+            get: { booleanValue(draft.isFrequent, defaultValue: false) },
+            set: { draft.isFrequent = $0 ? "true" : "false" }
+        )
+    }
+
+    private var enabledSelection: Binding<Bool> {
+        Binding(
+            get: { booleanValue(draft.isEnabled, defaultValue: true) },
+            set: { draft.isEnabled = $0 ? "true" : "false" }
+        )
+    }
+
+    private func booleanValue(_ source: String, defaultValue: Bool) -> Bool {
+        let value = source.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if ["true", "1", "yes", "はい", "有効", "on"].contains(value) { return true }
+        if ["false", "0", "no", "いいえ", "無効", "off"].contains(value) { return false }
+        return defaultValue
+    }
+
+    private func normalizeSelections() {
+        draft.taxRate = String(taxRateSelection.wrappedValue.rawValue)
+        draft.taxType = taxTypeSelection.wrappedValue.rawValue
+        draft.menuType = menuTypeSelection.wrappedValue.rawValue
+        draft.isFrequent = frequentSelection.wrappedValue ? "true" : "false"
+        draft.isEnabled = enabledSelection.wrappedValue ? "true" : "false"
     }
 }

@@ -22,12 +22,17 @@ Tables (home) | Products | History | Settings
 Table tile
   -> order screen
      -> ★ frequent / All / category / uncategorized tabs (default: All)
+        -> ★ and All keep category headings and group tiles by category
      -> search all enabled products regardless of selected tab
-     -> always-visible custom-item action -> large keypad sheet
+     -> always-visible custom-item action -> page-size sheet on iPad
+        -> left: tax choices and price keypad
+        -> right: quantity, optional name, large price and total
      -> line quantity edit/remove
      -> move/merge table sheet
-     -> checkout sheet: manually confirm total item count
-        -> payment entry
+     -> page-size checkout sheet: manually confirm total item count
+        -> left: order lines (scroll only when they overflow)
+        -> right: count keypad
+        -> payment entry: amount summary left / method and cash keypad right
         -> optional ten-yen round action
         -> payment method
         -> in-app cash tender keypad/change when applicable
@@ -51,6 +56,8 @@ Products tab
      -> choose CSV/text file
      -> validation preview and line errors
      -> tap any row -> correct values -> automatic revalidation
+        -> use pickers and on/off switches instead of typing enum/boolean values
+     -> select multiple rows -> bulk-set grand/limited or tax-included/tax-excluded
      -> choose update/skip for existing names
      -> import valid products and create missing categories
   -> OCR import
